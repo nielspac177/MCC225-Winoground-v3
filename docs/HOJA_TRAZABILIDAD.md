@@ -2,7 +2,7 @@
 
 | Elemento | Respuesta del estudiante |
 |---|---|
-| **Paper / modelo / línea temática** | Winoground (Thrush et al., 2022) + Evaluating CLIP (Radford et al.). Razonamiento composicional visio-lingüístico. |
+| **Paper / modelo / línea temática** | Winoground (Thrush et al., 2022) + Evaluating CLIP (Agarwal et al., 2021). Razonamiento composicional visio-lingüístico. |
 | **URL del repositorio entregado** | https://github.com/nielspac177/MCC225-ExamenParcial-Winoground |
 | **Cuadernos usados** | **C10** (OpenCLIP: embeddings, coseno, checkpoints, FAISS) — motor principal. **C5** (dual-encoder vs fusión profunda) y **C8** (atención crossmodal / interpretabilidad) — marco conceptual de contraste. |
 | **Notebook / script ejecutado** | `notebooks/Winoground_Eval_MCC225.ipynb` (ejecutado) · `scripts/02_run_winoground.py`. |

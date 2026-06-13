@@ -87,7 +87,7 @@ C10 es el **scorer composicional** y la **matriz 2×2 por par**.
   ejemplos son ambiguos, visualmente difíciles o requieren conocimiento extra; un group score bajo mezcla
   *fallo composicional* con *dificultad del ítem*. Por eso complemento la métrica con análisis por tag y casos
   cualitativos.
-- **Evaluating CLIP (Radford-adjacent / bias paper):** una métrica de "capacidad" más alta no implica "mejor"
+- **Evaluating CLIP (Agarwal et al., 2021):** una métrica de "capacidad" más alta no implica "mejor"
   modelo: el diseño de clases y los prompts introducen sesgos que la accuracy oculta.
 
 ---

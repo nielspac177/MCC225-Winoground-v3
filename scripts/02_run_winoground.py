@@ -93,6 +93,11 @@ def main():
     np.random.seed(seed)
     OUT.mkdir(parents=True, exist_ok=True)
 
+    valid_names = {c["name"] for c in ckpts}
+    if cfg["primary_checkpoint"] not in valid_names:
+        print(f"[run] AVISO: primary_checkpoint='{cfg['primary_checkpoint']}' no está en "
+              f"checkpoints.yaml {sorted(valid_names)}; se usará el primero.")
+
     examples, source = load_dataset(prefer_real=cfg["prefer_real"])
     n = len(examples)
     tags = [ex.tag for ex in examples]
@@ -109,9 +114,10 @@ def main():
         elapsed = time.time() - t0
         key = f"{source}__{ck['name']}__{ck['pretrained']}".replace("/", "_")
         npz = np.load(CACHE / f"{key}.npz")
+        n_params = int(npz["n_params"]) if "n_params" in npz.files else 0
         comparison_rows.append({
             "label": ck["label"], "name": ck["name"], "pretrained": ck["pretrained"],
-            "n_params_M": round(int(npz["n_params"]) / 1e6, 1),
+            "n_params_M": round(n_params / 1e6, 1),
             "text_score": round(agg.text, 4), "image_score": round(agg.image, 4),
             "group_score": round(agg.group, 4), "seconds": round(elapsed, 1),
         })

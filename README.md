@@ -43,9 +43,16 @@ make data
 make run
 make figures
 
-# 4) Tests (scorer + métricas)
+# 4) Tests (scorer + métricas) + validación contra clip.jsonl oficial
 make test
+make validate
+
+# atajo: make all = data + run + figures + test
 ```
+
+> Nota: `make run` usa `prefer_real=true` (configs/experiment.yaml). Sin licencia HF
+> aceptada cae al **set curado** y lo indica en `outputs/metrics/scores.json:source`
+> (`winoground_real` vs `curated`). Los números del README son con `winoground_real`.
 
 ### Winoground oficial (opcional, recomendado)
 
@@ -98,7 +105,8 @@ tests/       pytest del scorer y métricas
 
 ## Entorno
 
-Pinneado en `pyproject.toml` (Python 3.10–3.12). Imagen Docker CPU en `Dockerfile`.
+Acotado (cotas inferior y superior) en `pyproject.toml` y fijado exactamente en
+`uv.lock` (Python 3.10–3.12). Imagen Docker CPU en `Dockerfile`.
 La celda inicial del notebook y `scripts/00_verify_env.py` imprimen la **hoja de
 trazabilidad** (versiones, git rev, dispositivo).
 

@@ -40,18 +40,25 @@ sesgos. **Hipótesis:** un dual-encoder tendrá Recall@K alto y group score ≈ 
 Winoground oficial (400 ejemplos), OpenCLIP **ViT-B-32/laion2b** (números exactos en
 `outputs/metrics/`, regenerables con `make run`):
 
-- **Scores:** text = **0.347** (IC95% [0.30, 0.40]), image = **0.110** [0.08, 0.14],
-  **group = 0.075** [0.05, 0.10]. El group está **por debajo del azar (1/6 ≈ 0.167)** —
-  con el intervalo completo bajo el azar— y lejísimos del humano (≈0.855).
+- **Scores:** text = **0.348** (IC95% [0.30, 0.40]), image = **0.110** [0.08, 0.14],
+  **group = 0.075** [0.05, 0.10]. El text está **por encima** del azar (0.25) y el group
+  **por debajo** del azar (1/6 ≈ 0.167). Importante: group < 1/6 **no** significa "peor que
+  aleatorio" globalmente; es consecuencia de la **asimetría text ≫ image** (el modelo acierta
+  bien una dirección y falla la otra), y el group exige ganar ambas. Queda lejísimos del
+  humano (≈0.855).
 - **Retrieval vs composición:** sobre el mismo conjunto, **R@5 = 0.67** y **R@10 = 0.77**
   (texto→imagen) frente a **group = 0.075**: el retrieval es alto y la composición falla.
 - **Por tag (collapsed):** *Relation* es lo más difícil (group **0.047**, n=233), *Object*
   0.085 (n=141), *Both* 0.27 (n=26). Son fallos de **vinculación**, no de reconocimiento.
-- **Prueba de ceguera:** real (text 0.347 / image 0.11 / group 0.075) ≫ control con imágenes
-  permutadas (0.135 / 0.035 / 0.015 ≈ azar) ⇒ el modelo **sí** usa la imagen; su límite es
-  composicional, no perceptivo.
-- **Checkpoints:** group 0.075 (B-32), 0.072 (B-16/datacomp), 0.085 (L-14/openai): modelos
-  mayores apenas mueven la aguja, sin cerrar la brecha con el humano.
+- **Prueba de ceguera:** real (text 0.348 / image 0.11 / group 0.075) ≫ control con imágenes
+  permutadas (0.135 / 0.035 / 0.015), que **colapsa muy por debajo** del rendimiento real
+  (incluso bajo el azar marginal de 0.25 en text, porque la imagen permutada raramente coincide
+  con ninguna de las dos captions) ⇒ el modelo **sí** usa la imagen; su límite es composicional,
+  no perceptivo.
+- **Checkpoints (sin tendencia monótona con el tamaño):** group 0.075 (B-32/151M), 0.072
+  (B-16/datacomp/150M), 0.085 (L-14/openai/428M); pero el **text score baja** con el modelo
+  mayor: 0.348 (B-32) → 0.298 (B-16) → 0.288 (L-14). Ningún checkpoint se acerca al humano y
+  escalar tamaño/datos no resuelve la composición.
 - **Validación del scorer:** aplicado a los scores oficiales de CLIP del propio dataset
   (`statistics/model_scores/clip.jsonl`) reproduce **exactamente** text=0.3075, image=0.1050,
   group=0.0800 (`scripts/validate_against_official.py`).

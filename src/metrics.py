@@ -28,15 +28,19 @@ def recall_at_k(sim: np.ndarray, positive_index: Sequence[int], ks=(1, 5, 10)) -
     positive_index[q] = índice de la columna correcta para la consulta q.
     """
     sim = np.asarray(sim, dtype=float)
-    n = sim.shape[0]
+    n, gallery = sim.shape
     # rank: número de documentos con score estrictamente mayor que el positivo (+1)
     ranks = np.empty(n, dtype=int)
     for q in range(n):
         pos = positive_index[q]
         pos_score = sim[q, pos]
         ranks[q] = int(np.sum(sim[q] > pos_score)) + 1
-    out: Dict[str, float] = {}
+    out: Dict[str, float] = {"gallery_size": int(gallery)}
     for k in ks:
+        # R@K es trivial (≈1) si k ≥ tamaño de galería; se omite para una
+        # comparación honesta R@K vs group score.
+        if k >= gallery:
+            continue
         out[f"R@{k}"] = float(np.mean(ranks <= k))
     out["median_rank"] = float(np.median(ranks))
     out["mrr"] = float(np.mean(1.0 / ranks))
@@ -55,7 +59,7 @@ def bootstrap_ci(
     vals = np.asarray(binary_values, dtype=float)
     n = len(vals)
     if n == 0:
-        return {"mean": 0.0, "lo": 0.0, "hi": 0.0, "rounds": rounds}
+        return {"mean": 0.0, "lo": 0.0, "hi": 0.0, "rounds": rounds, "n": 0}
     rng = np.random.default_rng(seed)
     means = np.empty(rounds)
     for r in range(rounds):

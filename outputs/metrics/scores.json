@@ -19,7 +19,7 @@
   "environment": {
     "python": "3.12.11",
     "platform": "macOS-26.1-arm64-arm-64bit",
-    "git_revision": "no_git",
+    "git_revision": "00ac85d",
     "device": "mps (Apple Silicon)",
     "torch": "2.5.1",
     "open_clip_torch": "3.3.0",

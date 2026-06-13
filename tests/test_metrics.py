@@ -21,12 +21,20 @@ def test_cosine_is_scale_invariant():
 
 def test_recall_perfect():
     # Diagonal dominante -> el positivo siempre es top-1.
-    sim = np.eye(5) + 1e-3
-    pos = list(range(5))
-    r = recall_at_k(sim, pos, ks=(1, 5))
+    sim = np.eye(6) + 1e-3
+    pos = list(range(6))
+    r = recall_at_k(sim, pos, ks=(1, 3))
     assert r["R@1"] == pytest.approx(1.0)
-    assert r["R@5"] == pytest.approx(1.0)
+    assert r["R@3"] == pytest.approx(1.0)
     assert r["median_rank"] == pytest.approx(1.0)
+    assert r["gallery_size"] == 6
+
+
+def test_recall_skips_trivial_k():
+    # k >= tamaño de galería se omite (sería ≈1 trivialmente).
+    sim = np.eye(4)
+    r = recall_at_k(sim, list(range(4)), ks=(1, 4, 10))
+    assert "R@1" in r and "R@4" not in r and "R@10" not in r
 
 
 def test_recall_worst():

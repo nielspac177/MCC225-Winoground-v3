@@ -1,6 +1,7 @@
 {
   "note": "Recall@K usa toda la galería (fácil); el group score exige ganar el contraste de pares mínimos (difícil). Alto R@K + bajo group = el retrieval no implica razonamiento composicional.",
   "text_to_image_recall": {
+    "gallery_size": 800,
     "R@1": 0.30375,
     "R@5": 0.6675,
     "R@10": 0.77375,
@@ -8,6 +9,7 @@
     "mrr": 0.47405691649243326
   },
   "image_to_text_recall": {
+    "gallery_size": 800,
     "R@1": 0.34,
     "R@5": 0.70125,
     "R@10": 0.795,

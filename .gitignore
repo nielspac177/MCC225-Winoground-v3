@@ -17,6 +17,8 @@ slides/latex/*.out
 slides/latex/*.snm
 slides/latex/*.toc
 slides/latex/*.vrb
+slides/latex/*.fdb_latexmk
+slides/latex/*.fls
 
 # SO
 .DS_Store
