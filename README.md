@@ -5,20 +5,20 @@
 
 > **Tesis:** un dual-encoder tipo CLIP puede tener **retrieval (R@K) alto** y aun así
 > **fallar el razonamiento composicional** de Winoground (**group score ≈ azar**).
-> El retrieval no implica composición. Lo demuestro reutilizando el motor OpenCLIP del
+> Tener buen retrieval no garantiza composición. Lo demuestro reutilizando el motor OpenCLIP del
 > **Cuaderno 10**, y lo explico con la **fusión profunda (C5)** y la **atención crossmodal (C8)**.
 
 ## Resultado principal (verificable en vivo)
 
 Winoground oficial (400 ejemplos), OpenCLIP **ViT-B-32/laion2b**:
-**text = 0.347, image = 0.110, group = 0.075** (azar group = 1/6 ≈ 0.167; humano ≈ 0.855),
-pero **Recall@5 = 0.67 / R@10 = 0.77**. → *Retrieval alto, composición ≈ azar.*
+**text = 0.347, image = 0.110, group = 0.075** (azar group = 1/6 ≈ 0.167; humano ≈ 0.855).
+En cambio el **Recall@5 = 0.67 / R@10 = 0.77**. Es decir, retrieval alto y composición cercana al azar.
 El scorer está **validado** contra los scores oficiales de CLIP del dataset
-(`clip.jsonl`): reproduce exactamente text=0.3075 / image=0.105 / group=0.08
+(`clip.jsonl`); reproduce exactamente text=0.3075 / image=0.105 / group=0.08
 (`python scripts/validate_against_official.py`).
 
-Análisis completo: 3 scores con IC bootstrap, error por tag (Object/Relation/Both),
-prueba de "ceguera" a la imagen, contraste R@K vs group y comparación de 3 checkpoints.
+El análisis completo incluye los 3 scores con IC bootstrap, el error por tag (Object/Relation/Both),
+la prueba de "ceguera" a la imagen, el contraste R@K vs group y la comparación de 3 checkpoints.
 
 | Evidencia | Archivo |
 |---|---|
@@ -50,8 +50,8 @@ make validate
 # atajo: make all = data + run + figures + test
 ```
 
-> Nota: `make run` usa `prefer_real=true` (configs/experiment.yaml). Sin licencia HF
-> aceptada cae al **set curado** y lo indica en `outputs/metrics/scores.json:source`
+> Nota: `make run` usa `prefer_real=true` (configs/experiment.yaml). Si no hay licencia HF
+> aceptada, cae al **set curado** y lo indica en `outputs/metrics/scores.json:source`
 > (`winoground_real` vs `curated`). Los números del README son con `winoground_real`.
 
 ### Winoground oficial (opcional, recomendado)
@@ -60,7 +60,7 @@ El benchmark `facebook/winoground` es **gated**. Para usar el dataset real:
 
 1. Acepta la licencia (instantáneo) en https://huggingface.co/datasets/facebook/winoground
 2. Autentícate: `huggingface-cli login` (o exporta `HF_TOKEN`).
-3. `make data && make run` — el pipeline detecta el acceso y usa el real;
+3. `make data && make run`. El pipeline detecta el acceso y usa el real;
    si no, cae automáticamente al **set curado** (etiquetado en `scores.json: source`).
 
 ## Pipeline
@@ -105,10 +105,10 @@ tests/       pytest del scorer y métricas
 
 ## Entorno
 
-Acotado (cotas inferior y superior) en `pyproject.toml` y fijado exactamente en
-`uv.lock` (Python 3.10–3.12). Imagen Docker CPU en `Dockerfile`.
+Acotado con cota inferior y superior en `pyproject.toml`, y fijado exactamente en
+`uv.lock` (Python 3.10–3.12). La imagen Docker CPU está en `Dockerfile`.
 La celda inicial del notebook y `scripts/00_verify_env.py` imprimen la **hoja de
-trazabilidad** (versiones, git rev, dispositivo).
+trazabilidad** con versiones, git rev y dispositivo.
 
 ## Reproducibilidad / CI
 

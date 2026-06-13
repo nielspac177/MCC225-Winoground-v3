@@ -1,6 +1,6 @@
 # Checklist de entrega — Examen Parcial MCC225
 
-Mapa de cada requisito del examen al artefacto del repositorio.
+Aquí mapeo cada requisito del examen al artefacto donde lo resuelvo dentro del repositorio.
 
 ## Evidencia mínima (§3)
 

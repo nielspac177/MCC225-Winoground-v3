@@ -17,47 +17,48 @@
 Porque miden cosas distintas. **Retrieval (R@K)** pregunta: dada una caption, ¿está la
 imagen correcta entre las K más similares de **toda la galería**? Casi todas las imágenes
 de la galería son semánticamente distintas, así que basta con captar el *contenido grueso*
-(objetos, escena) para acertar. **Winoground** pregunta algo mucho más fino: dentro de un
-**par mínimo** —dos imágenes y dos captions con **las mismas palabras en distinto orden**—
+(objetos, escena) para acertar. **Winoground** pregunta algo mucho más fino. Dentro de un
+**par mínimo** (dos imágenes y dos captions con **las mismas palabras en distinto orden**),
 ¿asigna el modelo mayor similitud al emparejamiento correcto que al incorrecto? Eso exige
 codificar el **orden y las relaciones** (quién está sobre quién, qué color liga a qué objeto),
-no solo la bolsa de conceptos.
+y no solo la bolsa de conceptos.
 
 Un dual-encoder como CLIP (C10) colapsa cada modalidad en **un único embedding global** y
 compara por **similitud coseno**. Ese embedding se comporta de forma casi *bag-of-concepts*:
-"perro", "césped", "taza" activan dimensiones similares estén como estén compuestos. Por eso
+"perro", "césped" y "taza" activan dimensiones similares estén como estén compuestos. Por eso
 puede tener R@K alto y, a la vez, **group score cercano a 1/6 (azar)**. Mi experimento lo
-muestra lado a lado (`recall_vs_group.json`, figura `recall_vs_group.png`). Conexión con **C5**:
-la fusión profunda (MMBT) y, en general, un cross-encoder permiten interacción token-a-token y
-*sí* pueden modelar la composición; el dual-encoder, por diseño, no.
+muestra lado a lado (`recall_vs_group.json`, figura `recall_vs_group.png`). La conexión con **C5**
+es directa: la fusión profunda (MMBT) y, en general, un cross-encoder permiten interacción
+token-a-token y *sí* pueden modelar la composición. El dual-encoder, por diseño, no puede.
 
 ### 2. ¿Cómo verificaría si el modelo está usando realmente la imagen y no solo pistas textuales?
 
 Con una **prueba de ceguera por permutación** (`src/blindness_probe.py`, figura `blindness.png`).
 Reemplazo, para cada ejemplo, sus dos imágenes por las de **otro** ejemplo y recalculo los tres
-scores. Si los scores **reales ≫ permutados (≈ azar)**, el resultado depende del contenido visual
-⇒ el modelo **sí usa la imagen**. Si fueran parecidos, estaría explotando un sesgo a priori entre
-las dos captions (pistas no visuales). En Winoground esto es especialmente importante porque las
+scores. Si los scores **reales ≫ permutados (≈ azar)**, el resultado depende del contenido visual,
+de modo que el modelo **sí usa la imagen**. Si fueran parecidos, estaría explotando un sesgo a
+priori entre las dos captions (pistas no visuales). En Winoground esto pesa mucho, porque las
 dos captions tienen las **mismas palabras**: no hay "atajo" léxico que distinga una de otra sin
-mirar la imagen. Complemento: en el **image score** la caption se fija y se eligen imágenes; si el
-modelo ignorara la imagen no podría superar el azar en esa dirección. Conexión con **C8**: la
-atención crossmodal permite *inspeccionar* qué región/segmento atiende cada token — es la versión
-interpretable de "¿está mirando la imagen?".
+mirar la imagen. Como complemento, en el **image score** la caption se fija y se eligen imágenes;
+si el modelo ignorara la imagen no podría superar el azar en esa dirección. Aquí entra **C8**: la
+atención crossmodal permite *inspeccionar* qué región o segmento atiende cada token, que viene a ser
+la versión interpretable de "¿está mirando la imagen?".
 
 ### 3. ¿Qué tipo de error aparece en Winoground?
 
 Errores de **vinculación composicional**, no de reconocimiento. El modelo reconoce los objetos
 correctos pero **falla al ligarlos en la estructura correcta**. Mi `error_analysis.py` los separa
-por tag (figura `by_tag.png`, `failure_cases.json`):
+por tag (figuras `by_tag.png` y `failure_cases.json`):
 
 - **Relación / orden** ("A a la izquierda de B" vs "B a la izquierda de A", "A sobre B" vs "B sobre A"):
   el modelo da similitud casi idéntica a ambas porque el embedding global no codifica bien la relación espacial.
 - **Binding atributo-objeto** ("círculo rojo y cuadrado azul" vs "círculo azul y cuadrado rojo"):
   el modelo "ve" rojo, azul, círculo, cuadrado, pero no a *qué objeto* pertenece cada color.
 
-Típicamente el **text score** y el **image score** caen de forma desigual: hay ejemplos donde acierta
-una dirección y falla la otra (por eso el group, que exige ambas, es el más bajo). El paper original
-clasifica además en object/relation/both/symbolic/pragmatics/series; el mío reproduce object vs relation.
+Normalmente el **text score** y el **image score** caen de forma desigual: hay ejemplos donde acierta
+una dirección y falla la otra, y por eso el group, que exige ambas, queda como el más bajo. El paper
+original clasifica además en object/relation/both/symbolic/pragmatics/series; el mío reproduce object
+vs relation.
 
 ### 4. ¿Cómo adaptaría el código para evaluar pares imagen-texto con cambios mínimos de composición?
 
@@ -71,24 +72,24 @@ Eso es exactamente lo que hace mi pipeline y lo puedo mostrar en vivo:
 3. **Mínimo cambio de código** en vivo: añadir un ejemplo al `examples.jsonl` curado o cambiar `caption_1`
    por otra permutación y re-ejecutar `02_run_winoground.py`. Verás cómo cambian los tres scores.
 
-El motor de embeddings es el de **C10** (`openclip_utils.create_model/encode_*`); lo único "nuevo" frente a
+El motor de embeddings es el de **C10** (`openclip_utils.create_model/encode_*`). Lo único "nuevo" frente a
 C10 es el **scorer composicional** y la **matriz 2×2 por par**.
 
 ### 5. ¿Qué limitación tienen las métricas automáticas en este caso?
 
 - **No miden composición:** R@K y accuracy zero-shot pueden ser altos con un modelo *bag-of-concepts*. Son
-  necesarias pero **no suficientes**; Winoground existe justamente para tapar ese hueco.
-- **Umbral y empates:** los scores son comparaciones estrictas (`>`); un empate cuenta como fallo. Pequeñas
-  diferencias de similitud deciden el resultado, así que las métricas son **sensibles al ruido numérico** y
-  a la normalización de embeddings.
+  necesarias pero **no suficientes**, y Winoground existe justamente para tapar ese hueco.
+- **Umbral y empates:** los scores son comparaciones estrictas (`>`), de modo que un empate cuenta como fallo.
+  Pequeñas diferencias de similitud deciden el resultado, así que las métricas quedan **sensibles al ruido
+  numérico** y a la normalización de embeddings.
 - **Azar no trivial:** el azar del group score es **1/6, no 1/16**, porque text e image **no son independientes**
   (comparten las 4 similitudes). Comparar contra el baseline correcto es parte de la métrica.
 - **El propio benchmark tiene ruido:** Diwan et al. ("Why is Winoground Hard?") muestran que parte de los
-  ejemplos son ambiguos, visualmente difíciles o requieren conocimiento extra; un group score bajo mezcla
-  *fallo composicional* con *dificultad del ítem*. Por eso complemento la métrica con análisis por tag y casos
-  cualitativos.
-- **Evaluating CLIP (Agarwal et al., 2021):** una métrica de "capacidad" más alta no implica "mejor"
-  modelo: el diseño de clases y los prompts introducen sesgos que la accuracy oculta.
+  ejemplos son ambiguos, visualmente difíciles o requieren conocimiento extra. Un group score bajo entonces
+  mezcla *fallo composicional* con *dificultad del ítem*, así que complemento la métrica con análisis por tag y
+  casos cualitativos.
+- **Evaluating CLIP (Agarwal et al., 2021):** una métrica de "capacidad" más alta no implica un "mejor"
+  modelo, porque el diseño de clases y los prompts introducen sesgos que la accuracy oculta.
 
 ---
 
@@ -111,17 +112,17 @@ C10 es el **scorer composicional** y la **matriz 2×2 por par**.
 6. **¿Qué error/limitación/sesgo observé?** Errores de binding/relación (no de reconocimiento); sensibilidad a
    empates; el set curado es un proxy controlado; el benchmark real tiene ítems ambiguos.
 7. **¿Qué pasaría si cambio modelo/prompt/checkpoint/dataset/negativos?** Lo medí: ver `checkpoint_comparison.csv`
-   (ViT-B-32 vs B-16 vs L-14). Un checkpoint mayor sube algo los scores pero el group sigue muy por debajo del
-   humano; cambiar a pares no-mínimos (retrieval normal) dispara R@K y oculta el problema.
+   (ViT-B-32 vs B-16 vs L-14). Un checkpoint mayor sube algo los scores, pero el group sigue muy por debajo del
+   humano. Si en cambio uso pares no-mínimos (retrieval normal), R@K se dispara y el problema queda oculto.
 8. **¿Qué parte corresponde a conceptos de clase?** Contrastive dual-encoder y similitud coseno (C10/C6);
    dual vs deep fusion (C5); atención crossmodal / interpretabilidad (C8); zero-shot y FAISS (C10).
 9. **¿Qué mejora haría para un pipeline reproducible?** Ya está: `uv` + lockfile, Dockerfile, Makefile, seeds,
    `env_logging`, tests, CI nightly. Siguiente paso: cachear embeddings versionados y DVC para los datos.
-10. **¿Qué resultado no puedo asegurar aún y por qué?** Que la **causa** del fallo sea *solo* composicional: el
-    group score (0.075) mezcla fallo de composición con ítems ambiguos/visualmente difíciles (Diwan et al. estiman
+10. **¿Qué resultado no puedo asegurar aún y por qué?** Que la **causa** del fallo sea *solo* composicional. El
+    group score (0.075) mezcla fallo de composición con ítems ambiguos o visualmente difíciles (Diwan et al. estiman
     que una fracción del benchmark es ruidosa). Tampoco puedo asegurar que un cross-encoder (C5) lo resuelva sin
-    evaluarlo: es mi hipótesis y mi mejora propuesta, no un resultado medido. El número de OpenCLIP **sí** lo
-    aseguro (validado contra `clip.jsonl`).
+    evaluarlo: por ahora es mi hipótesis y mi mejora propuesta, no un resultado medido. El número de OpenCLIP **sí** lo
+    aseguro, validado contra `clip.jsonl`.
 
 ---
 

@@ -7,18 +7,18 @@
 ## Contexto
 
 Winoground mide razonamiento composicional con pares mínimos: dos imágenes y dos
-captions que comparten exactamente las mismas palabras en distinto orden. Hay que
+captions que comparten exactamente las mismas palabras en distinto orden. Tenemos que
 decidir con qué arquitectura producir la evidencia principal y cómo conectar el
 resultado con los conceptos de los cuadernos obligatorios.
 
-Dos familias disponibles en el curso:
+El curso ofrece dos familias:
 
 1. **Dual-encoder (CLIP / OpenCLIP, C10):** codifica imagen y texto por separado en
-   un embedding global; compara por similitud coseno. Barato, escalable, ideal para
-   retrieval. No modela interacción token-a-token entre modalidades.
+   un embedding global y los compara por similitud coseno. Es barato, escala bien y
+   funciona para retrieval, pero no modela la interacción token-a-token entre modalidades.
 2. **Fusión profunda / cross-encoder (MMBT en C5, atención crossmodal en C8):**
-   permite que tokens visuales y textuales interactúen en capas conjuntas. Más
-   expresivo para composición, pero más costoso y no escala a retrieval masivo.
+   deja que los tokens visuales y textuales interactúen en capas conjuntas. Gana
+   expresividad para composición a cambio de mayor costo, y no escala a retrieval masivo.
 
 ## Decisión
 
@@ -31,21 +31,21 @@ qué arquitectura la abordaría.
 
 ## Justificación
 
-- El experimento es **trazable y reproducible en CPU/MPS** (solo inferencia, modelos
-  pequeños), cumpliendo el énfasis del examen en reproducibilidad mínima.
+- El experimento es **trazable y reproducible en CPU/MPS** (solo inferencia, con modelos
+  pequeños), lo que cumple el énfasis del examen en reproducibilidad mínima.
 - Permite la evidencia central de la tesis: **alto Recall@K + group score ≈ azar**, que
-  es exactamente el fenómeno que Winoground expone y que conecta las tres preguntas
-  clave del estudiante.
-- Conecta explícitamente C10 (motor), C5 (dual vs deep fusion) y C8 (¿usa la imagen? /
-  interpretabilidad), como pide la rúbrica (relación con C5–C10).
+  es el fenómeno que Winoground expone y que enlaza las tres preguntas clave del
+  estudiante.
+- Conecta C10 (motor), C5 (dual vs deep fusion) y C8 (¿usa la imagen? /
+  interpretabilidad), tal como pide la rúbrica para la relación con C5–C10.
 
 ## Consecuencias
 
 - **Positivas:** pipeline ligero, determinista, defendible en vivo; figuras claras;
   comparación de checkpoints directa.
 - **Negativas / limitaciones:** no entrenamos ni evaluamos un cross-encoder real sobre
-  Winoground (sería el siguiente paso); el set curado offline es un *proxy* controlado,
-  no el benchmark oficial. Ambas quedan documentadas como limitación y mejora futura.
+  Winoground, que sería el siguiente paso. El set curado offline es un *proxy* controlado
+  y no el benchmark oficial. Dejamos ambas cosas documentadas como limitación y mejora futura.
 
 ## Alternativas descartadas
 
