@@ -1,0 +1,6 @@
+rank,score,example_id,image,matching_caption
+1,0.248,203,img1,left is blue and right is red
+2,0.2407,93,img1,one boat and two directions down the stream
+3,0.24,114,img1,one red apple surrounded by a bunch of green apples
+4,0.2352,35,img0,a circular sign is above a rectangular sign
+5,0.2295,235,img0,a person is in the tube

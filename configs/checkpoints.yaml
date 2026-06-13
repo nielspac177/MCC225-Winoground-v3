@@ -1,0 +1,12 @@
+# Checkpoints OpenCLIP a comparar (igual espíritu que el Cuaderno 10).
+# El primero es el baseline principal (ligero, corre rápido en CPU/MPS).
+checkpoints:
+  - name: ViT-B-32
+    pretrained: laion2b_s34b_b79k
+    label: "ViT-B-32 / laion2b"
+  - name: ViT-B-16
+    pretrained: datacomp_xl_s13b_b90k
+    label: "ViT-B-16 / datacomp_xl"
+  - name: ViT-L-14-quickgelu
+    pretrained: openai
+    label: "ViT-L-14 / openai"

@@ -1,0 +1,7 @@
+seed: 42
+prefer_real: true           # intenta Winoground oficial; si no, set curado
+bootstrap_rounds: 2000
+recall_ks: [1, 5, 10]
+# checkpoint usado para el análisis detallado (by-tag, blindness, retrieval, FAISS)
+primary_checkpoint: ViT-B-32
+faiss_query: "the red circle is to the left of the blue square"

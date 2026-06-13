@@ -1,0 +1,31 @@
+{
+  "source": "winoground_real",
+  "n_examples": 400,
+  "primary_checkpoint": "ViT-B-32 / laion2b",
+  "scores": {
+    "n_examples": 400,
+    "text_score": 0.3475,
+    "image_score": 0.11,
+    "group_score": 0.075,
+    "chance_text": 0.25,
+    "chance_image": 0.25,
+    "chance_group": 0.16666666666666666
+  },
+  "human_reference": {
+    "text": 0.895,
+    "image": 0.885,
+    "group": 0.855
+  },
+  "environment": {
+    "python": "3.12.11",
+    "platform": "macOS-26.1-arm64-arm-64bit",
+    "git_revision": "no_git",
+    "device": "mps (Apple Silicon)",
+    "torch": "2.5.1",
+    "open_clip_torch": "3.3.0",
+    "transformers": "5.12.0",
+    "datasets": "5.0.0",
+    "numpy": "2.1.3",
+    "faiss": "1.14.3"
+  }
+}

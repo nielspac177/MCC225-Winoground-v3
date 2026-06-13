@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "0 6 * * *"   # nightly 06:00 UTC: re-verifica el scorer y un smoke run
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+      - name: Set up Python
+        run: uv venv --python 3.12 .venv
+      - name: Install deps
+        run: uv pip install --python .venv/bin/python -e ".[dev]"
+      - name: Unit tests (scorer + métricas)
+        run: .venv/bin/python -m pytest -q
+      - name: Smoke — generar set curado y verificar entorno
+        run: |
+          .venv/bin/python scripts/00_verify_env.py
+          .venv/bin/python scripts/01_prepare_data.py
+      - name: Smoke — pipeline sobre set curado (1 checkpoint, sin red gated)
+        env:
+          PREFER_REAL: "false"
+          WINO_CKPT_LIMIT: "1"
+        run: |
+          .venv/bin/python scripts/02_run_winoground.py
+          .venv/bin/python scripts/03_make_figures.py
+      - name: Subir métricas como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: outputs-metrics
+          path: outputs/metrics/

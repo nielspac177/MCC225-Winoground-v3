@@ -1,0 +1,21 @@
+{
+  "real": {
+    "n_examples": 400,
+    "text_score": 0.3475,
+    "image_score": 0.11,
+    "group_score": 0.075,
+    "chance_text": 0.25,
+    "chance_image": 0.25,
+    "chance_group": 0.16666666666666666
+  },
+  "permuted_images": {
+    "n_examples": 400,
+    "text_score": 0.135,
+    "image_score": 0.035,
+    "group_score": 0.015,
+    "chance_text": 0.25,
+    "chance_image": 0.25,
+    "chance_group": 0.16666666666666666
+  },
+  "interpretation": "Si 'real' >> 'permuted_images' (≈ azar), el modelo SÍ usa el contenido de la imagen. Si fueran similares, estaría apoyándose en pistas no visuales."
+}

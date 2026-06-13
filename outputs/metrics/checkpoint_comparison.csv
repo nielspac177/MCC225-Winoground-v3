@@ -1,0 +1,4 @@
+label,name,pretrained,n_params_M,text_score,image_score,group_score,seconds
+ViT-B-32 / laion2b,ViT-B-32,laion2b_s34b_b79k,151.3,0.3475,0.11,0.075,0.0
+ViT-B-16 / datacomp_xl,ViT-B-16,datacomp_xl_s13b_b90k,149.6,0.2975,0.0875,0.0725,0.0
+ViT-L-14 / openai,ViT-L-14-quickgelu,openai,427.6,0.2875,0.11,0.085,0.0

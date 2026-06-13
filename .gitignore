@@ -1,0 +1,22 @@
+# entorno
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+
+# caches pesados (modelos / embeddings / parquet de winoground)
+data/winoground_cache/
+*.npz
+
+# artefactos de compilación de slides
+slides/latex/*.aux
+slides/latex/*.log
+slides/latex/*.nav
+slides/latex/*.out
+slides/latex/*.snm
+slides/latex/*.toc
+slides/latex/*.vrb
+
+# SO
+.DS_Store

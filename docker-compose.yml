@@ -1,0 +1,10 @@
+services:
+  winoground:
+    build: .
+    image: mcc225-winoground:latest
+    volumes:
+      - ./:/workspace
+    environment:
+      # Monta tu token HF para acceder al Winoground real (gated).
+      HF_TOKEN: ${HF_TOKEN:-}
+    command: bash -lc "python scripts/01_prepare_data.py && python scripts/02_run_winoground.py && python scripts/03_make_figures.py"
