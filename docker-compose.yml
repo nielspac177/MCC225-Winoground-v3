@@ -30,4 +30,4 @@ services:
       - ./:/workspace
     environment:
       HF_TOKEN: ${HF_TOKEN:-}
-    command: bash -lc "python scripts/demo_visual.py --n 6 && python scripts/demo_winoground.py --n 5 --retrieval"
+    command: bash -lc "python scripts/demo_visual.py --n 6 && python scripts/build_demo_app.py --n 10 && python scripts/demo_winoground.py --n 5 --retrieval"

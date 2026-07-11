@@ -8,6 +8,7 @@ retrieval sea alto.
 ## ▶️ Ejecutar
 
 ```bash
+make demo-app       # APP HTML interactiva (offline) -> abrir en el navegador  ⭐ recomendada
 make demo           # versión terminal (matriz 2x2 + veredictos en texto)
 make demo-visual    # versión VISUAL: paneles con imágenes reales + heatmap + GIF animado
 # o directamente:
@@ -23,6 +24,18 @@ ideal para proyectar o incrustar en las diapositivas.
 Requisitos: entorno instalado (`make setup`) y el checkpoint `ViT-B-32/laion2b` en
 caché (se descarga la primera vez; el demo usa el mismo motor que la evidencia
 committeada en `outputs/`).
+
+### App HTML para presentar (abrir y mostrar)
+
+`make demo-app` genera `outputs/demo/demo_app.html`: un **único archivo autónomo**
+(imágenes embebidas, sin servidor, offline) que se abre en el navegador y permite
+navegar los pares mínimos con ← / →, con el heatmap 2×2, los veredictos ✓/✗ y un
+marcador acumulado. Ábrelo así:
+
+```bash
+open outputs/demo/demo_app.html                    # navegador por defecto (macOS)
+open -a "Google Chrome" outputs/demo/demo_app.html # o Chrome / Safari
+```
 
 ## 🗣️ Qué mostrar y decir (60–90 s)
 

@@ -1,4 +1,4 @@
-.PHONY: setup data run figures test validate models manifest notebook annotate figura avance demo demo-visual slides all clean help docker-avance docker-demo
+.PHONY: setup data run figures test validate models manifest notebook annotate figura avance demo demo-visual demo-app slides all clean help docker-avance docker-demo
 PY := .venv/bin/python
 
 help:
@@ -61,6 +61,9 @@ demo:   ## demo en vivo (terminal): CLIP sobre pares mínimos de Winoground
 
 demo-visual:   ## demo VISUAL: paneles con imágenes + heatmap 2x2 + GIF animado
 	PYTORCH_ENABLE_MPS_FALLBACK=1 $(PY) scripts/demo_visual.py --n 6
+
+demo-app:   ## genera la APP HTML interactiva (offline) -> outputs/demo/demo_app.html
+	PYTORCH_ENABLE_MPS_FALLBACK=1 $(PY) scripts/build_demo_app.py --n 10
 
 slides:
 	cd slides/latex && latexmk -pdf defensa_winoground.tex || pdflatex defensa_winoground.tex
