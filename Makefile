@@ -56,8 +56,11 @@ figura:   ## genera la figura de ejemplos evaluados (Actividad5)
 avance: models manifest notebook annotate   ## reproducción completa (Exposición 2)
 	@echo "Reproducción C14 completa. Revisa el notebook ejecutado, outputs/ y reports/."
 
-demo:   ## demo en vivo: CLIP sobre pares mínimos de Winoground
+demo:   ## demo en vivo (terminal): CLIP sobre pares mínimos de Winoground
 	PYTORCH_ENABLE_MPS_FALLBACK=1 $(PY) scripts/demo_winoground.py --n 5 --retrieval
+
+demo-visual:   ## demo VISUAL: paneles con imágenes + heatmap 2x2 + GIF animado
+	PYTORCH_ENABLE_MPS_FALLBACK=1 $(PY) scripts/demo_visual.py --n 6
 
 slides:
 	cd slides/latex && latexmk -pdf defensa_winoground.tex || pdflatex defensa_winoground.tex

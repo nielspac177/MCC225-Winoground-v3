@@ -1,163 +1,175 @@
-# MCC225 — Examen Parcial · Winoground / Evaluating CLIP
+# Retrieval alto ≠ razonamiento composicional: evaluación de CLIP en Winoground
 
-**Niels Victor Pacheco Barrios** · Maestría en Ciencias de la Computación · 2026-1
-**Tema:** Winoground / Evaluating CLIP · **Cuadernos del curso:** C5, C8, C10.
+**Niels Victor Pacheco Barrios** · Maestría en Ciencias de la Computación · MCC225 (IA Generativa y Aprendizaje Multimodal) · 2026-1
 
-> **Tesis:** un dual-encoder tipo CLIP puede tener **retrieval (R@K) alto** y aun así
-> **fallar el razonamiento composicional** de Winoground (**group score ≈ azar**).
-> Tener buen retrieval no garantiza composición. Lo demuestro reutilizando el motor OpenCLIP del
-> **Cuaderno 10**, y lo explico con la **fusión profunda (C5)** y la **atención crossmodal (C8)**.
+> **Tesis.** Un *dual-encoder* tipo CLIP puede alcanzar **retrieval alto** (Recall@5 ≈ 0.67)
+> y, aun así, **fallar el razonamiento composicional** de Winoground: su *group score*
+> (0.075) queda **por debajo del azar** (1/6 ≈ 0.167) y muy lejos del humano (0.855).
+> Tener buen retrieval **no** garantiza composición. Este repositorio lo demuestra con
+> evidencia reproducible y explica la causa mecanística: la ausencia de *cross-attention*
+> entre las dos torres del encoder.
 
-## Segunda Exposición Académica (Exposición 2)
+![Demo: CLIP sobre pares mínimos de Winoground](outputs/demo/demo_winoground.gif)
 
-Entregables de la Exposición 2 y dónde vive cada uno:
-
-| Entregable obligatorio | Ubicación |
-|---|---|
-| Presentación PDF (7–8 slides) | `slides/latex/exposicion2_winoground.pdf` |
-| Avance técnico (2–3 pp) | `docs/avance_tecnico_MCC225.pdf` |
-| Repositorio con commits | este repo (historial git) |
-| Cuaderno 14 resuelto + outputs | `notebooks/Cuaderno14_MCC225_resuelto.ipynb` · `outputs/metrics|tables|figures` |
-| Actividad 5 aplicada | `Actividad5-MCC225.md` · `evaluacion_responsable_mcc225/` |
-| Evidencia reproducible | `outputs/metrics/` · `outputs/tables/` · `outputs/figures/` |
-
-**Reproducción — entorno local (uv + Python 3.12):**
-
-```bash
-make setup            # .venv + instala .[dev,notebook]
-make avance           # manifest local (120 pares reales) + ejecuta el Cuaderno14 headless
-make run              # pipeline Winoground -> outputs/metrics
-make figures          # figuras -> outputs/figures
-make test             # pytest
-make demo             # DEMO EN VIVO para la defensa (ver docs/DEMO.md)
-```
-
-Sin uv/pyproject: `pip install -r requirements.txt`.
-
-**Reproducción — Docker (CPU):**
-
-```bash
-docker compose run --rm avance   # o: make docker-avance
-```
-
-**Documentos de apoyo:** [`docs/PLAN_EXPOSICION2_MCC225.md`](docs/PLAN_EXPOSICION2_MCC225.md) ·
-[`docs/FLUJOGRAMA_MCC225.md`](docs/FLUJOGRAMA_MCC225.md) ·
-[`docs/ENTREGA_EXPOSICION2.md`](docs/ENTREGA_EXPOSICION2.md) (checklist de trazabilidad) ·
-[`docs/DEMO.md`](docs/DEMO.md) (guion del demo) ·
-[`docs/RESPUESTAS_EXPOSICION2.md`](docs/RESPUESTAS_EXPOSICION2.md) (banco de defensa) ·
-[`Actividad5-MCC225.md`](Actividad5-MCC225.md).
+*Demo (`make demo-visual`): en cada par mínimo, CLIP asigna similitudes casi idénticas a
+ambos captions (Δ ≈ 0.01) y elige la misma imagen para los dos → falla el `group`.*
 
 ---
 
-## Resultado principal (verificable en vivo)
+## 1. Problema
 
-Winoground oficial (400 ejemplos), OpenCLIP **ViT-B-32/laion2b**:
-**text = 0.347, image = 0.110, group = 0.075** (azar group = 1/6 ≈ 0.167; humano ≈ 0.855).
-En cambio el **Recall@5 = 0.67 / R@10 = 0.77**. Es decir, retrieval alto y composición cercana al azar.
-El scorer está **validado** contra los scores oficiales de CLIP del dataset
-(`clip.jsonl`); reproduce exactamente text=0.3075 / image=0.105 / group=0.08
-(`python scripts/validate_against_official.py`).
+Winoground evalúa **razonamiento composicional visio-lingüístico** con **pares mínimos**:
+dos imágenes y dos captions que usan *las mismas palabras* reordenadas y difieren solo por
+composición (p. ej. *"the old person kisses the young person"* vs. su inversión). Un modelo
+resuelve un ejemplo solo si acierta simultáneamente:
 
-El análisis completo incluye los 3 scores con IC bootstrap, el error por tag (Object/Relation/Both),
-la prueba de "ceguera" a la imagen, el contraste R@K vs group y la comparación de 3 checkpoints.
+- **text score:** dado cada imagen, elegir el caption correcto;
+- **image score:** dado cada caption, elegir la imagen correcta;
+- **group score:** ambos a la vez (la métrica que exige composición real).
 
-| Evidencia | Archivo |
-|---|---|
-| Scores + entorno | `outputs/metrics/scores.json` |
-| IC bootstrap 95% | `outputs/metrics/bootstrap_ci.csv` |
-| Comparación de checkpoints | `outputs/metrics/checkpoint_comparison.csv` |
-| Retrieval alto vs group bajo | `outputs/metrics/recall_vs_group.json` |
-| Figuras publicables | `outputs/figures/*.png` |
-| Cuaderno ejecutado | `notebooks/Winoground_Eval_MCC225.ipynb` |
-| Respuestas de defensa | `docs/RESPUESTAS_PREGUNTAS.md` · `docs/HOJA_TRAZABILIDAD.md` |
+Azar: text/image = 0.25, group = 1/6 ≈ 0.167. Humano ≈ 0.855.
 
-## Reproducción mínima
+**Pregunta.** ¿Un dual-encoder contrastivo (CLIP), fuerte en recuperación, entiende la
+composición, o solo reconoce presencia de conceptos?
 
-```bash
-# 1) Entorno reproducible (uv + Python 3.12)
-make setup            # o: uv venv --python 3.12 .venv && uv pip install -e ".[dev]"
+## 2. Método
 
-# 2) Datos: set curado offline (siempre) + intento de Winoground real (gated)
-make data
-
-# 3) Evaluación -> outputs/metrics/   y   figuras -> outputs/figures/
-make run
-make figures
-
-# 4) Tests (scorer + métricas) + validación contra clip.jsonl oficial
-make test
-make validate
-
-# atajo: make all = data + run + figures + test
-```
-
-> Nota: `make run` usa `prefer_real=true` (configs/experiment.yaml). Si no hay licencia HF
-> aceptada, cae al **set curado** y lo indica en `outputs/metrics/scores.json:source`
-> (`winoground_real` vs `curated`). Los números del README son con `winoground_real`.
-
-### Winoground oficial (opcional, recomendado)
-
-El benchmark `facebook/winoground` es **gated**. Para usar el dataset real:
-
-1. Acepta la licencia (instantáneo) en https://huggingface.co/datasets/facebook/winoground
-2. Autentícate: `huggingface-cli login` (o exporta `HF_TOKEN`).
-3. `make data && make run`. El pipeline detecta el acceso y usa el real;
-   si no, cae automáticamente al **set curado** (etiquetado en `scores.json: source`).
-
-## Pipeline
+**Arquitectura evaluada: dual-encoder CLIP** (`ViT-B-32/laion2b`). Dos torres transformer
+independientes —una de imagen (ViT), una de texto— con **self-attention interna**; se
+comparan solo al final por **similitud coseno**. No hay *cross-attention* entre modalidades:
+esa es la hipótesis mecanística del fallo composicional.
 
 ```mermaid
 flowchart LR
-    A[winoground_data.py<br/>real HF · fallback curado] --> B[openclip_utils.py<br/>encode imagen/texto · C10]
-    B --> C[winoground_eval.py<br/>text/image/group score]
-    C --> D[metrics.py<br/>Recall@K · bootstrap CI]
-    C --> E[error_analysis.py<br/>por tag · casos]
-    B --> F[blindness_probe.py<br/>¿usa la imagen?]
-    D & E & F --> G[outputs/metrics + figures]
-    G --> H[notebook · slides · docs]
+    A["winoground_data.py<br/>HF real · fallback curado"] --> B["openclip_utils.py<br/>encode imagen/texto (C10)"]
+    B --> C["winoground_eval.py<br/>text / image / group score"]
+    C --> D["metrics.py<br/>Recall@K · bootstrap CI"]
+    C --> E["error_analysis.py<br/>error por tag · casos"]
+    B --> F["blindness_probe.py<br/>prueba de ceguera"]
+    D --> G["outputs/metrics + figures"]
+    E --> G
+    F --> G
+    G --> H["notebook · slides · avance"]
 ```
 
-## Mapa a los cuadernos del curso
+**Protocolo de evaluación (contribución).** Además del *scorer* oficial —validado contra los
+scores publicados de CLIP (`clip.jsonl`)— se añaden cinco análisis para separar *retrieval*
+de *composición*: (i) Recall@K con IC *bootstrap*; (ii) error por *tag* (Object/Relation/Both);
+(iii) **prueba de ceguera** (permutar imágenes para medir cuánto usa la visión); (iv) contraste
+directo R@K vs group; (v) comparación de 3 checkpoints. El `Cuaderno14` reproduce este pipeline
+sobre 120 pares reales adaptados al proyecto (retrieval, CLIPScore, captioning BLIP, ablaciones
+de robustez y análisis de errores anotado); ver [ADR 0002](docs/adr/0002-cuaderno14-sobre-winoground.md).
 
-| Cuaderno | Qué reutilicé / adapté |
-|---|---|
-| **C10** (OpenCLIP) | Motor de embeddings, similitud coseno, comparación de checkpoints, FAISS → `src/openclip_utils.py`. |
-| **C5** (deep fusion) | Marco conceptual: dual-encoder vs fusión profunda; por qué el cross-encoder modela composición → `docs/adr/0001`. |
-| **C8** (atención crossmodal) | Interpretabilidad / "¿usa la imagen?" → `src/blindness_probe.py`. |
+## 3. Resultados
 
-## Estructura
+**Winoground oficial (400 pares, `ViT-B-32/laion2b`):**
+
+| Métrica | Modelo | Azar | Humano |
+|---|--:|--:|--:|
+| text score | **0.347** | 0.25 | — |
+| image score | **0.110** | 0.25 | — |
+| **group score** | **0.075** | **0.167** | **0.855** |
+| Recall@5 (t2i) | **0.667** | — | — |
+| Recall@10 (t2i) | **0.774** | — | — |
+
+El *scorer* reproduce exactamente los valores oficiales de CLIP (text=0.3075 / image=0.105 /
+group=0.08) vía `python scripts/validate_against_official.py`.
+
+**Lecturas clave:**
+- **Retrieval alto, composición ≈ azar.** R@5=0.67 frente a group=0.075 (IC 95% *bootstrap*
+  entero por debajo de 0.167): el modelo recupera bien pero no compone.
+- **La relación es lo más difícil.** Por *tag*: Relation group=0.047 (n=233) < Object 0.085
+  (n=141) < Both 0.269 (n=26).
+- **Sí usa la imagen, pero débilmente.** Prueba de ceguera: al permutar las imágenes el group
+  cae de 0.075 a 0.015.
+- **No es cuestión de checkpoint.** ViT-B-32/laion2b (0.075), ViT-B-16/datacomp_xl (0.073),
+  ViT-L-14/openai (0.085): todos cerca del azar.
+- **Cuaderno14 (120 pares locales):** retrieval i2t R@5=0.87 (baseline de captions desplazados
+  0.03) y **robustez** a degradación visual (CLIPScore 0.26–0.27 en blur/gris/recorte); los
+  captions BLIP puntúan bajo (BLEU≈0.07) porque describen la escena pero pierden la composición.
+
+Figuras en `outputs/figures/` (scores vs azar, R@K vs group, por tag, ceguera, checkpoints,
+casos cualitativos). Tablas exactas en `outputs/tables/` y `outputs/metrics/`.
+
+## 4. Análisis de errores
+
+La hoja anotada (`outputs/tables/plantilla_analisis_errores.csv`, 29 casos) concentra los
+fallos en **relación espacial** (12/29) y **binding de atributos/roles** (acción 4, atributo 3,
+conteo 3): justo lo que un dual-encoder sin cross-attention no separa. En los pares mínimos, la
+diferencia de similitud entre las dos imágenes para un mismo caption es ~0.01 → el modelo no
+distingue *quién hace qué a quién*.
+
+## 5. Evaluación responsable (Actividad 5)
+
+`reporte_evaluacion_responsable.md` cierra con una evaluación de uso responsable: 5 casos reales
+(2 aciertos, 2 errores, 1 ambiguo, trazables a `outputs/metrics/failure_cases.json`), pruebas de
+confiabilidad (casi insensible a la negación, Δ≈−0.008) y una clasificación honesta:
+**parcialmente confiable / solo en condiciones controladas**, uso recomendado **limitado**.
+Afirmar que "CLIP entiende la relación espacial" sería irresponsable con esta evidencia.
+
+## 6. Reproducibilidad
+
+```bash
+# entorno local (uv + Python 3.12)
+make setup           # .venv + instala .[dev,notebook]
+make models          # convierte CLIP/BLIP a safetensors local (CVE-2025-32434)
+make avance          # 120 pares reales + ejecuta el Cuaderno14 + anota errores
+make run figures     # pipeline Winoground -> outputs/
+make test validate   # 16 tests + validación contra clip.jsonl oficial
+make demo            # demo en vivo (terminal)
+make demo-visual     # demo VISUAL: paneles con imágenes + heatmap + GIF
+```
+
+```bash
+# o todo en Docker (CPU)
+docker compose run --rm avance
+```
+
+Sin uv/pyproject: `pip install -r requirements.txt`. El *scorer* está validado; CI (GitHub
+Actions) corre tests + *smoke run* en cada push y cada noche.
+
+## 7. Conclusión y trabajo futuro
+
+El dual-encoder alcanza su techo: recuperación fuerte y robusta, pero composición cercana al
+azar. La vía de cierre es un **cross-encoder profundo** (BLIP-2 / cross-attention, C5), que
+modela la interacción imagen–texto token a token; ya se probó un *re-ranker-lite* validado por
+folds como paso intermedio. La conclusión central se sostiene con evidencia reproducible:
+**tener buen retrieval no garantiza composición.**
+
+---
+
+## Estructura del repositorio
 
 ```
-src/         scorer, métricas, motor OpenCLIP, datos, blindness, env logging
-scripts/     00_verify_env · 01_prepare_data · 02_run_winoground · 03_make_figures
-configs/     checkpoints.yaml · experiment.yaml
-notebooks/   Winoground_Eval_MCC225.ipynb (ejecutado)
-outputs/     metrics/ · figures/   (evidencia commiteada)
-docs/        RESPUESTAS_PREGUNTAS · HOJA_TRAZABILIDAD · INFORME · adr/
-slides/      latex/ (Beamer→PDF) · pptx/
+src/         scorer Winoground · métricas · motor OpenCLIP · datos · ceguera · env
+scripts/     pipeline (00–03) · validate · manifest · convert-models · demo · demo_visual
+notebooks/   Cuaderno14_MCC225_resuelto.ipynb (ejecutado) · Winoground_Eval_MCC225.ipynb
+outputs/     metrics/ · tables/ · figures/ · demo/   (evidencia commiteada)
+docs/        avance técnico · flujograma · plan · ADRs · defensa · DEMO · ENTREGA
+slides/      latex/ (Beamer→PDF: exposición 2 + defensa) · pptx/
 tests/       pytest del scorer y métricas
 ```
 
-## Qué puede romper la ejecución (trazabilidad §9.11)
+## Entregables de la Segunda Exposición Académica
 
-- **Acceso gated** a Winoground sin licencia aceptada/token → usa set curado (no es error).
-- Versiones de `open_clip_torch` / `torch` distintas a las pinneadas en `pyproject.toml`.
-- Primera ejecución descarga checkpoints (ViT-L-14 ≈ varios cientos de MB).
+Checklist completo y trazabilidad rúbrica→archivo en
+[`docs/ENTREGA_EXPOSICION2.md`](docs/ENTREGA_EXPOSICION2.md). Guía del flujo en
+[`docs/FLUJOGRAMA_MCC225.md`](docs/FLUJOGRAMA_MCC225.md) · plan en
+[`docs/PLAN_EXPOSICION2_MCC225.md`](docs/PLAN_EXPOSICION2_MCC225.md) · demo en
+[`docs/DEMO.md`](docs/DEMO.md) · banco de defensa en
+[`docs/RESPUESTAS_EXPOSICION2.md`](docs/RESPUESTAS_EXPOSICION2.md).
 
-## Entorno
+| Entregable | Ubicación |
+|---|---|
+| Presentación 8 slides (PDF) | `slides/latex/exposicion2_winoground.pdf` |
+| Avance técnico 2–3 pp (PDF) | `docs/avance_tecnico_MCC225.pdf` |
+| Cuaderno 14 resuelto + outputs | `notebooks/Cuaderno14_MCC225_resuelto.ipynb` · `outputs/` |
+| Actividad 5 aplicada | `reporte_evaluacion_responsable.md` · `evaluacion_responsable_mcc225/` |
+| Evidencia reproducible | `outputs/metrics/` · `outputs/tables/` · `outputs/figures/` |
 
-Acotado con cota inferior y superior en `pyproject.toml`, y fijado exactamente en
-`uv.lock` (Python 3.10–3.12). La imagen Docker CPU está en `Dockerfile`.
-La celda inicial del notebook y `scripts/00_verify_env.py` imprimen la **hoja de
-trazabilidad** con versiones, git rev y dispositivo.
+## Uso de herramientas generativas
 
-## Reproducibilidad / CI
-
-GitHub Actions (`.github/workflows/ci.yml`) corre los tests + un *smoke run* del pipeline
-sobre el set curado en cada push y **cada noche** (cron).
-
-## Licencia / uso de herramientas generativas
-
-Trabajo individual para el examen MCC225. El código fue desarrollado con asistencia de
-herramientas de IA generativa (declarado conforme a la consigna §12); las definiciones de
-métrica se verificaron contra el paper de Winoground.
+Trabajo individual (MCC225). El código y la redacción se desarrollaron con asistencia de IA
+generativa, declarada conforme a la consigna; **todos los valores numéricos** provienen de
+archivos reproducibles del repositorio y las definiciones de métrica se verificaron contra el
+paper de Winoground y el *scorer* oficial (`clip.jsonl`).

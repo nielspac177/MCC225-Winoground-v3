@@ -8,10 +8,17 @@ retrieval sea alto.
 ## ▶️ Ejecutar
 
 ```bash
-make demo
-# o directamente, con más ejemplos:
+make demo           # versión terminal (matriz 2x2 + veredictos en texto)
+make demo-visual    # versión VISUAL: paneles con imágenes reales + heatmap + GIF animado
+# o directamente:
 python scripts/demo_winoground.py --n 8 --retrieval
+python scripts/demo_visual.py --n 6      # -> outputs/demo/panel_*.png + demo_winoground.gif
 ```
+
+La versión visual (`make demo-visual`) genera, por cada par mínimo, un panel con las **dos
+imágenes reales**, sus captions, el **mapa de calor 2×2** de similitud y los veredictos
+`text / image / group` con ✓/✗, y ensambla un **GIF animado** (`outputs/demo/demo_winoground.gif`)
+ideal para proyectar o incrustar en las diapositivas.
 
 Requisitos: entorno instalado (`make setup`) y el checkpoint `ViT-B-32/laion2b` en
 caché (se descarga la primera vez; el demo usa el mismo motor que la evidencia
