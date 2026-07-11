@@ -213,6 +213,19 @@ Checklist completo y trazabilidad rúbrica→archivo en
 
 Reproducir: `make avance` (o `docker compose run --rm avance`).
 
+### Ficha de adaptación del Cuaderno 14 (Actividad 5, Parte 2)
+
+| Elemento | Respuesta |
+|---|---|
+| **Modelo usado** | CLIP `openai/clip-vit-base-patch32` (safetensors local) + BLIP base para captioning; motor OpenCLIP `ViT-B-32/laion2b` en el pipeline integrador |
+| **Dataset o subconjunto** | Pares imagen–texto **reales de Winoground**, cargados desde el caché local (`data/raw/manifest_local.csv`) |
+| **Número de ejemplos** | 120 pares locales (100 para retrieval, 80 para ablación visual); 400 pares en el pipeline integrador |
+| **Métricas usadas** | Recall@K (i2t/t2i), CLIPScore, text/image/group score, BLEU · ROUGE-L · cobertura léxica |
+| **Baseline usado** | Captions desplazados (rompen el emparejamiento imagen–texto) → ≈ azar |
+| **Hardware o entorno** | Apple Silicon (`mps`), Python 3.12, entorno reproducible (`.venv` / Docker) |
+| **Parte del Cuaderno 14 reutilizada** | Carga de datos, cálculo de embeddings, matriz de similitud, retrieval, CLIPScore, ablaciones, análisis de errores y figuras |
+| **Parte modificada para el proyecto** | Reemplazo del dataset genérico por 120 pares reales de Winoground ([ADR 0002](docs/adr/0002-cuaderno14-sobre-winoground.md)); corrección del bug de fuga en la métrica de captions; conversión de pesos a safetensors (fix CVE-2025-32434) |
+
 ### Cómo se resuelve la Actividad 5 (8 partes)
 
 Se adapta el Cuaderno14 al proyecto (dual-encoder CLIP en Winoground; ver
