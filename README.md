@@ -147,6 +147,10 @@ modela la interacción imagen–texto token a token; ya se probó un *re-ranker-
 folds como paso intermedio. La conclusión central se sostiene con evidencia reproducible:
 **tener buen retrieval no garantiza composición.**
 
+Las líneas de trabajo hacia el trabajo final (cross-encoder profundo, escala estadística,
+hard-negative training, interpretabilidad de la atención, ambigüedad del benchmark) están
+priorizadas con esfuerzo estimado en [`docs/TRABAJO_FUTURO.md`](docs/TRABAJO_FUTURO.md).
+
 ---
 
 ## Estructura del repositorio
@@ -168,7 +172,8 @@ Checklist completo y trazabilidad rúbrica→archivo en
 [`docs/FLUJOGRAMA_MCC225.md`](docs/FLUJOGRAMA_MCC225.md) · plan en
 [`docs/PLAN_EXPOSICION2_MCC225.md`](docs/PLAN_EXPOSICION2_MCC225.md) · demo en
 [`docs/DEMO.md`](docs/DEMO.md) · banco de defensa en
-[`docs/RESPUESTAS_EXPOSICION2.md`](docs/RESPUESTAS_EXPOSICION2.md).
+[`docs/RESPUESTAS_EXPOSICION2.md`](docs/RESPUESTAS_EXPOSICION2.md) · trabajo futuro en
+[`docs/TRABAJO_FUTURO.md`](docs/TRABAJO_FUTURO.md).
 
 | Entregable | Ubicación |
 |---|---|
