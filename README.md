@@ -96,6 +96,30 @@ group=0.08) vía `python scripts/validate_against_official.py`.
 Figuras en `outputs/figures/` (scores vs azar, R@K vs group, por tag, ceguera, checkpoints,
 casos cualitativos). Tablas exactas en `outputs/tables/` y `outputs/metrics/`.
 
+### Cuaderno 14 — preguntas experimentales (nuestra implementación)
+
+1. **¿Qué tan bien alinea el modelo imágenes y textos reales?** Bien a nivel de recuperación:
+   i2t R@1=0.44 · R@5=0.87 · R@10=0.97 (t2i 0.39/0.82/0.95), muy por encima del baseline de
+   captions desplazados (R@1=0.01). CLIPScore medio ≈ 0.27.
+2. **¿Qué cambia al degradar la imagen o perturbar los captions?** Poco al **degradar la imagen**
+   (blur/gris/recorte/baja-res): el CLIPScore cae solo 0.270 → 0.259–0.267 y el retrieval se
+   mantiene → **robusto**. Pero es **casi insensible a la negación** en el texto (Δ≈−0.008):
+   cambiar el significado del caption apenas mueve el score → no modela la composición.
+3. **¿Qué errores aparecen con mayor frecuencia?** Relación espacial (12/29), luego otros
+   (negación/temporal, 7), acción/rol (4), conteo (3) y atributo (3): dominan los fallos de
+   *quién hace qué a quién*.
+4. **¿Qué métrica captura mejor cada comportamiento?** Ninguna sola basta: **Recall@K / CLIPScore**
+   capturan el alineamiento de objetos (retrieval); el **group score** de Winoground captura la
+   composición; la **cobertura léxica** es más informativa que BLEU/ROUGE-L para captions (que
+   degeneraron por una fuga y se corrigieron).
+5. **¿Qué limitaciones quedan fuera de las métricas automáticas?** La composición y el rol
+   agente/paciente no los capturan Recall@K/CLIPScore; hay ambigüedad del propio benchmark
+   (Diwan et al., 2022); el análisis cualitativo de errores exige anotación manual (29 casos);
+   la muestra es limitada.
+6. **¿El experimento es reproducible por otra persona?** Sí: semilla fija (22514), metadatos de
+   entorno y commit de git, manifiesto local + pesos en safetensors, `make avance` (o
+   `docker compose run --rm avance`) y 16 tests + validación contra `clip.jsonl` oficial.
+
 ## 4. Análisis de errores
 
 La hoja anotada (`outputs/tables/plantilla_analisis_errores.csv`, 29 casos) concentra los
