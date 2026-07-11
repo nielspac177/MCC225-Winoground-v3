@@ -150,6 +150,59 @@ slides/      latex/ (Beamer→PDF: exposición 2 + defensa) · pptx/
 tests/       pytest del scorer y métricas
 ```
 
+## Contexto de la evaluación: exposición y Actividad 5
+
+### 1) La exposición — *Segunda Exposición Académica Programada* (la evaluación de hoy)
+
+- **Formato:** individual, ~3 h, **20 puntos**. Una **exposición oral de 12–15 min** + una
+  **ronda de defensa** (preguntas técnicas no publicadas, que también puntúan).
+- **Objetivo:** sustentar el **avance del trabajo integrador** demostrando dominio de
+  *transformer, atención y arquitecturas multimodales*, con **evidencia experimental real**
+  (del Cuaderno14) y la **Actividad5 aplicada**.
+- **Insumos obligatorios en el repo:** 8 slides PDF, avance técnico 2–3 pág, repo con commits,
+  Cuaderno14 resuelto, Actividad5 y evidencia reproducible. → *todo listo y publicado.*
+- **Rúbrica (20 pts):** formulación (3) · transformer+atención (4) · arquitecturas+comparación
+  (4) · evidencia (3) · Actividad5 (3) · repo/reproducibilidad (2) · comunicación/defensa (1).
+
+### 2) La Actividad 5 — *"Evaluación responsable del proyecto multimodal"*
+
+No es un proyecto nuevo: es la **capa crítica** sobre el sistema. Usa el Cuaderno14 como
+plantilla y responde *¿cómo evalúo responsablemente mi sistema multimodal?* Es uno de los
+insumos obligatorios de la exposición y aporta **3 de los 20 puntos**.
+
+> **En una frase:** la *exposición* es la sustentación oral del avance (Winoground/CLIP); la
+> *Actividad 5* es el análisis honesto de confiabilidad, errores y límites que se presenta
+> dentro de esa exposición.
+
+### ¿Dónde está el Cuaderno 14?
+
+| Archivo | Qué es |
+|---|---|
+| `notebooks/Cuaderno14_MCC225.ipynb` | Base sin resolver (traído del repo del curso) |
+| `notebooks/Cuaderno14_MCC225_resuelto.ipynb` | **Resuelto y ejecutado** (24 celdas, 0 errores, 120 pares reales de Winoground) |
+| `reports/reporte_exposicion_2.md` · `outputs/tables/` · `outputs/metrics/` | Reporte y evidencia que produce |
+
+Reproducir: `make avance` (o `docker compose run --rm avance`).
+
+### ¿Cómo resolvemos la Actividad 5?
+
+Se **adapta el Cuaderno14 al proyecto** (dual-encoder CLIP en Winoground; ver
+[ADR 0002](docs/adr/0002-cuaderno14-sobre-winoground.md)) y se completan sus **8 partes con
+evidencia real y trazable** — ningún caso inventado:
+
+| Parte de la Actividad 5 | Cómo se resuelve | Evidencia |
+|---|---|---|
+| 1. Proyecto y tarea | Ficha: CLIP en Winoground, matching/retrieval composicional | `reporte_evaluacion_responsable.md` |
+| 2. Adaptación del Cuaderno14 | 120 pares reales, CLIP ViT-B/32, baseline desplazado | `docs/adr/0002-…` |
+| 3. Resultados cuantitativos | E1 retrieval · E2 ablación visual · E3 Winoground *group* | `results/metricas.csv` |
+| 4. Cinco casos (2✓/2✗/1 ambiguo) | tomados de casos reales del experimento | `results/casos_analizados.csv` · `outputs/metrics/failure_cases.json` |
+| 5. Confiabilidad | sensibilidad a la negación (Δ≈−0.008) + caso difícil | `outputs/tables/perturbacion_textual.csv` |
+| 6. Explicabilidad | prueba de ceguera (0.075→0.015) + error por *tag* | `outputs/metrics/blindness.json` · `by_tag.csv` |
+| 7. Sesgo y uso responsable | ficha; uso recomendado **limitado** | `results/ficha_uso_responsable.csv` |
+| 8. Conclusión (450–600 pal.) | síntesis honesta: *parcialmente confiable* | `reporte_evaluacion_responsable.md` |
+
+Figura de apoyo: `figures/ejemplos_evaluados.png` · índice: `evaluacion_responsable_mcc225/README.md`.
+
 ## Entregables de la Segunda Exposición Académica
 
 Checklist completo y trazabilidad rúbrica→archivo en
