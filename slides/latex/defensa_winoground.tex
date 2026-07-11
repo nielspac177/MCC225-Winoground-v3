@@ -4,90 +4,354 @@
 \usepackage[spanish]{babel}
 \usepackage{booktabs}
 \usepackage{graphicx}
+\usepackage{tikz}
 \graphicspath{{../../outputs/figures/}}
 \definecolor{azul}{HTML}{0072B2}
+\definecolor{naranja}{HTML}{E69F00}
 \definecolor{verde}{HTML}{009E73}
+\definecolor{gris}{HTML}{999999}
 \setbeamercolor{frametitle}{bg=azul}
+\setbeamertemplate{frame numbering}[fraction]
 
 \title{Winoground / Evaluating CLIP}
-\subtitle{Retrieval alto $\neq$ razonamiento composicional}
+\subtitle{El retrieval alto no implica razonamiento composicional}
 \author{Niels Victor Pacheco Barrios}
-\institute{MCC225 — IA Generativa y Aprendizaje Multimodal · Examen Parcial 2026-1}
-\date{Cuadernos C5 · C8 · C10}
+\institute{MCC225 — IA Generativa y Aprendizaje Multimodal · Examen Parcial 2026-1\\Cuadernos C5 · C8 · C10}
+\date{}
 
 \begin{document}
 
+% ===================== 1. PORTADA =====================
 \maketitle
 
-% ----------------------------------------------------------- 2 min
-\begin{frame}{Recordatorio: paper y resultado principal (2 min)}
-  \textbf{Winoground} (Thrush et al., 2022): pares mínimos — 2 imágenes y 2 captions
-  con \emph{las mismas palabras en distinto orden}. Mide composición, no reconocimiento.
-  \begin{itemize}
-    \item \textbf{text / image / group score}; azar $=\tfrac14,\tfrac14,\tfrac16$; humano $\approx 0.86$ group.
-    \item \textbf{Evaluating CLIP}: una accuracy mayor no implica un modelo "mejor" (sesgos, diseño de clases).
-  \end{itemize}
-  \alert{Resultado:} OpenCLIP tiene \textbf{Recall@K alto} pero \textbf{group score $\approx$ azar}.
-  \begin{center}\includegraphics[height=0.42\textheight]{recall_vs_group.png}\end{center}
+% ===================== 2. AGENDA =====================
+\begin{frame}{Qué voy a defender en 15 minutos}
+  \begin{enumerate}
+    \item El problema: ¿CLIP \emph{entiende} o solo \emph{empareja}? (Winoground)
+    \item Cómo lo medí reutilizando el motor OpenCLIP del Cuaderno 10.
+    \item El resultado: retrieval alto, \alert{group score $\approx$ azar}.
+    \item Verificación en vivo + validación contra los scores oficiales.
+    \item Por qué pasa (C5, C8), limitaciones y mejora.
+  \end{enumerate}
+  \vfill
+  \footnotesize Tesis en una frase: \textbf{recuperar bien una imagen no prueba que el modelo
+  entienda el orden ni las relaciones de la escena.}
 \end{frame}
 
-% ----------------------------------------------------------- 3 min
-\begin{frame}{Cómo lo obtuve ejecutando los cuadernos (3 min)}
-  Reutilicé el \textbf{motor OpenCLIP del Cuaderno 10}: \texttt{create\_model\_and\_transforms},
-  encode imagen/texto, similitud coseno.
-  \begin{columns}
+\section{El problema}
+
+% ===================== 3. LOS DOS PAPERS =====================
+\begin{frame}{Mi tema: dos papers que cuestionan a CLIP}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Winoground} (Thrush et al., 2022)\\
+    \footnotesize ¿Los modelos visión-lenguaje razonan de forma \emph{composicional},
+    o reconocen objetos sueltos? Mide el orden y la vinculación, no el reconocimiento.
+    \column{0.5\textwidth}
+    \textbf{Evaluating CLIP} (Agarwal et al., 2021)\\
+    \footnotesize Una accuracy mayor no define un modelo «mejor»: el diseño de clases y
+    los prompts esconden sesgos. La métrica no lo es todo.
+  \end{columns}
+  \vfill
+  \centering\footnotesize Ambos atacan la misma idea: \textbf{una buena métrica puede ocultar que el modelo no entiende.}
+\end{frame}
+
+% ===================== 4. QUÉ ES UN PAR MÍNIMO =====================
+\begin{frame}{El núcleo de Winoground: el par mínimo}
+  Dos imágenes y dos captions con \textbf{exactamente las mismas palabras en distinto orden}.
+  \begin{center}
+  \begin{tabular}{ll}
+    \toprule
+    Caption 0 & «\textit{an old person kisses a young person}» \\
+    Caption 1 & «\textit{a young person kisses an old person}» \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \footnotesize Mismo vocabulario. Distinguirlas exige saber \emph{quién} hace \emph{qué} a \emph{quién}.
+  Un modelo que solo detecta «old», «young», «kiss» no puede; necesita composición.
+  \par\vspace{0.5em}
+  400 ejemplos, etiquetados por tipo de cambio: \textbf{Object}, \textbf{Relation}, \textbf{Both}.
+\end{frame}
+
+% ===================== 5. LAS TRES MÉTRICAS =====================
+\begin{frame}{Las tres métricas oficiales}
+  Por ejemplo, similitud $s(\text{caption}, \text{imagen})$ en una matriz $2\times2$:
+  \begin{columns}[T]
+    \column{0.46\textwidth}
+    \centering
+    \begin{tabular}{c|cc}
+        & $i_0$ & $i_1$ \\\hline
+      $c_0$ & \textbf{\color{verde}$s_{00}$} & $s_{01}$ \\
+      $c_1$ & $s_{10}$ & \textbf{\color{verde}$s_{11}$} \\
+    \end{tabular}
+    \par\footnotesize (la diagonal verde es lo correcto)
+    \column{0.54\textwidth}
+    \footnotesize
+    \textbf{text score}: fijada cada imagen, ¿gana el caption correcto?\\
+    $s_{00}>s_{10}$ y $s_{11}>s_{01}$\\[4pt]
+    \textbf{image score}: fijado cada caption, ¿gana la imagen correcta?\\
+    $s_{00}>s_{01}$ y $s_{11}>s_{10}$\\[4pt]
+    \textbf{group score}: ambas a la vez (text \textbf{y} image).
+  \end{columns}
+\end{frame}
+
+% ===================== 6. EL AZAR NO ES 1/16 =====================
+\begin{frame}{Detalle fino: el azar del group score es 1/6}
+  \begin{itemize}
+    \item text e image \textbf{no son independientes}: comparten las 4 similitudes.
+    \item group = 1 exige que \emph{ambas} diagonales superen a \emph{ambas} off-diagonales.
+    \item De las $4! = 24$ ordenaciones de 4 valores, solo \textbf{4} cumplen $\Rightarrow 4/24 = 1/6 \approx 0.167$.
+  \end{itemize}
+  \vfill
+  \centering\alert{No es $1/16$.} Comparar contra el baseline correcto es parte de la métrica
+  (un error común que un examinador puede preguntar).
+\end{frame}
+
+% ===================== 7. LA TESIS =====================
+\begin{frame}{La pregunta que respondo}
+  \Large
+  \centering
+  ¿Un buen \textbf{Recall@K} (recuperación) implica
+  \textbf{razonamiento composicional}?
+  \vfill
+  \normalsize Voy a mostrar que \textbf{no}: el mismo modelo, sobre el mismo conjunto,
+  recupera bien y \alert{falla la composición}.
+\end{frame}
+
+\section{Cómo lo medí (Cuaderno 10)}
+
+% ===================== 8. CÓMO FUNCIONA CLIP =====================
+\begin{frame}{Cómo funciona CLIP: un dual-encoder contrastivo}
+  \begin{itemize}
+    \item Dos torres separadas: una codifica la imagen, otra el texto.
+    \item Cada modalidad colapsa en \textbf{un único vector global}; se comparan por \textbf{coseno}.
+    \item Entrenado con aprendizaje contrastivo (acercar pares correctos, alejar incorrectos).
+  \end{itemize}
+  \vfill
+  \footnotesize Esto es exactamente el motor del \textbf{Cuaderno 10} (OpenCLIP):
+  \texttt{create\_model\_and\_transforms}, \texttt{encode\_image/encode\_text}, similitud coseno.
+  Lo reutilicé tal cual.
+\end{frame}
+
+% ===================== 9. POR QUÉ FALLA (intuición) =====================
+\begin{frame}{Por qué un dual-encoder falla la composición}
+  \begin{columns}[T]
+    \column{0.6\textwidth}
+    \begin{itemize}
+      \item Un vector global se comporta como \textbf{«bolsa de conceptos»}.
+      \item «old», «young», «kiss» activan dimensiones parecidas \emph{estén como estén compuestos}.
+      \item No hay interacción \emph{token-a-token} entre palabras y regiones.
+    \end{itemize}
+    \column{0.4\textwidth}
+    \footnotesize\centering
+    \textbf{Conexión C5 / C8:}\\[4pt]
+    La \emph{fusión profunda} (MMBT, C5) y la \emph{atención crossmodal} (C8)
+    sí dejan interactuar tokens visuales y textuales. Esa es la vía para la composición.
+  \end{columns}
+\end{frame}
+
+% ===================== 10. PIPELINE =====================
+\begin{frame}{El pipeline (reproducible)}
+  \footnotesize
+  \begin{enumerate}
+    \item \texttt{winoground\_data.py}: Winoground real (HF, gated) o set curado offline.
+    \item \texttt{openclip\_utils.py}: embeddings L2-normalizados (motor C10).
+    \item \texttt{winoground\_eval.py}: matriz $2\times2$ y los 3 scores.
+    \item \texttt{metrics.py}: Recall@K, intervalos bootstrap.
+    \item \texttt{blindness\_probe.py}: ¿usa la imagen? · \texttt{error\_analysis.py}: por tag.
+  \end{enumerate}
+  \vfill
+  Todo determinista (semillas), versionado y con tests. Una corrida: \texttt{make run}.
+\end{frame}
+
+% ===================== 11. EL SCORER (CÓDIGO) =====================
+\begin{frame}[fragile]{El bloque clave: el scorer}
+\begin{verbatim}
+def text_correct(sim):   # fija imagen, elige caption
+    return sim[0,0] > sim[1,0] and sim[1,1] > sim[0,1]
+
+def image_correct(sim):  # fija caption, elige imagen
+    return sim[0,0] > sim[0,1] and sim[1,1] > sim[1,0]
+
+def group_correct(sim):
+    return text_correct(sim) and image_correct(sim)
+\end{verbatim}
+  \footnotesize Es el código \textbf{oficial} de Winoground. La redacción verbal de papers
+  de seguimiento suena al revés; me guié por el código y lo validé numéricamente.
+\end{frame}
+
+% ===================== 12. VALIDACIÓN =====================
+\begin{frame}{¿Cómo sé que mi scorer no está mal?}
+  Lo apliqué a los scores oficiales de CLIP que vienen en el propio dataset
+  (\texttt{statistics/model\_scores/clip.jsonl}).
+  \begin{center}
+  \begin{tabular}{lccc}
+    \toprule
+     & text & image & group \\
+    \midrule
+    Paper (CLIP ViT-B/32) & 0.3075 & 0.1050 & 0.0800 \\
+    \textbf{Mi scorer} & \textbf{0.3075} & \textbf{0.1050} & \textbf{0.0800} \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \centering\alert{Coincidencia exacta.} \footnotesize \texttt{python scripts/validate\_against\_official.py}
+\end{frame}
+
+\section{Resultados}
+
+% ===================== 13. RESULTADO PRINCIPAL =====================
+\begin{frame}{Resultado principal: los tres scores}
+  \begin{center}\includegraphics[height=0.75\textheight]{scores_vs_chance.png}\end{center}
+  \footnotesize ViT-B-32/laion2b, 400 ejemplos reales. text=0.35, image=0.11, \alert{group=0.075} (azar 0.167; humano 0.86).
+\end{frame}
+
+% ===================== 14. LEER EL RESULTADO =====================
+\begin{frame}{Cómo leer ese resultado}
+  \begin{itemize}
+    \item \textbf{text} (0.35) está \emph{por encima} del azar (0.25): el modelo capta algo.
+    \item \textbf{group} (0.075) está \emph{por debajo} del azar (0.167).
+    \item No significa «peor que aleatorio» en general. Es la \textbf{asimetría text $\gg$ image}:
+    acierta una dirección y falla la otra, y el group exige ganar las dos.
+  \end{itemize}
+  \vfill
+  \centering El intervalo de confianza del group (bootstrap 95\%: $[0.05, 0.10]$) queda
+  \textbf{entero por debajo} del azar.
+\end{frame}
+
+% ===================== 15. RETRIEVAL VS GROUP =====================
+\begin{frame}{La evidencia de la tesis: retrieval alto, group bajo}
+  \begin{center}\includegraphics[height=0.72\textheight]{recall_vs_group.png}\end{center}
+  \footnotesize Mismo modelo y mismo conjunto: \textbf{R@5=0.67, R@10=0.77} pero \alert{group=0.075}.
+  El retrieval usa toda la galería (fácil); el group exige ganar el par mínimo (difícil).
+\end{frame}
+
+% ===================== 16. POR TAG =====================
+\begin{frame}{¿Qué tipo de error? Análisis por tag}
+  \begin{center}\includegraphics[height=0.66\textheight]{by_tag.png}\end{center}
+  \footnotesize \textbf{Relation} es lo más difícil (group 0.047). Son fallos de \emph{vinculación}
+  (quién con quién), no de reconocimiento. «Both» sube porque las dos imágenes difieren más.
+\end{frame}
+
+% ===================== 17. CEGUERA =====================
+\begin{frame}{¿El modelo usa la imagen? Prueba de ceguera}
+  \begin{columns}[c]
+    \column{0.55\textwidth}
+    \includegraphics[width=\linewidth]{blindness.png}
+    \column{0.45\textwidth}
+    \footnotesize
+    Permuto las imágenes entre ejemplos y recalculo. Los scores reales
+    (0.35 / 0.11 / 0.075) \textbf{caen} a (0.14 / 0.04 / 0.02).
+    \par\vspace{0.5em}
+    Conclusión: \textbf{sí usa la imagen}; su límite es composicional, no perceptivo.
+    Es la versión cuantitativa de la pregunta de interpretabilidad de \textbf{C8}.
+  \end{columns}
+\end{frame}
+
+% ===================== 18. CHECKPOINTS =====================
+\begin{frame}{¿Y si uso un modelo más grande?}
+  \begin{center}\includegraphics[height=0.62\textheight]{checkpoint_comparison.png}\end{center}
+  \footnotesize Group no mejora de forma monótona (0.075 / 0.072 / 0.085) y el \textbf{text incluso baja}
+  con el modelo mayor (0.35 $\to$ 0.30 $\to$ 0.29). Escalar tamaño/datos \alert{no} resuelve la composición.
+\end{frame}
+
+% ===================== 19. EJEMPLOS CUALITATIVOS =====================
+\begin{frame}{Casos de error concretos (group = 0)}
+  \begin{center}\includegraphics[height=0.72\textheight]{qualitative_examples.png}\end{center}
+  \footnotesize Pares mínimos que el modelo confunde: reconoce los objetos pero no su composición.
+\end{frame}
+
+\section{Cierre}
+
+% ===================== 20. REPRODUCIBILIDAD =====================
+\begin{frame}{Reproducibilidad (lo que pide el examen)}
+  \begin{columns}[T]
     \column{0.5\textwidth}
     \footnotesize
-    \begin{enumerate}
-      \item \texttt{winoground\_data.py}: real (HF, gated) + fallback curado.
-      \item \texttt{openclip\_utils.py}: embeddings normalizados (C10).
-      \item \texttt{winoground\_eval.py}: matriz $2\times2$ \texttt{sim[caption,imagen]} y los 3 scores.
-      \item \texttt{02\_run\_winoground.py}: scores + IC bootstrap + by-tag + ceguera + R@K.
-    \end{enumerate}
+    \begin{itemize}
+      \item Entorno fijo: \texttt{uv} + \texttt{uv.lock}, Python 3.12.
+      \item Imagen \textbf{Docker} CPU; \texttt{Makefile}.
+      \item Semillas globales; \texttt{env\_logging} (hoja de trazabilidad).
+      \item \textbf{16 tests} (pytest) + validación contra \texttt{clip.jsonl}.
+    \end{itemize}
     \column{0.5\textwidth}
-    \scriptsize
-    \texttt{text=1 $\Leftrightarrow$ s(c0,i0)>s(c0,i1)\\ \hspace*{1.2em} y s(c1,i1)>s(c1,i0)}\\[2pt]
-    \texttt{image=1 $\Leftrightarrow$ s(c0,i0)>s(c1,i0)\\ \hspace*{1.4em} y s(c1,i1)>s(c0,i1)}\\[2pt]
-    \texttt{group = text AND image}
+    \footnotesize
+    \begin{itemize}
+      \item \textbf{CI} en GitHub Actions (push + nocturno).
+      \item Evidencia (métricas/figuras) commiteada.
+      \item Reproducir de cero:\\ \texttt{make setup \&\& make all}.
+    \end{itemize}
   \end{columns}
+  \vfill
+  \centering\footnotesize El dataset gated \textbf{no} se redistribuye (licencia); cae al set curado si no hay acceso.
 \end{frame}
 
-% ----------------------------------------------------------- 3 min
-\begin{frame}{Verificación en vivo: los tres scores (3 min)}
-  \begin{center}\includegraphics[height=0.78\textheight]{scores_vs_chance.png}\end{center}
+% ===================== 21. DEMO EN VIVO =====================
+\begin{frame}{Verificación en vivo (lo que mostraré en pantalla)}
+  \footnotesize
+  \begin{enumerate}
+    \item Celda 1 del notebook: hoja de trazabilidad (versiones, git, dispositivo).
+    \item Celda del scorer: imprime la matriz $2\times2$ y text/image/group de un par.
+    \item \texttt{scores.json} + figura \texttt{scores\_vs\_chance.png}.
+    \item \texttt{python scripts/validate\_against\_official.py} $\to$ reproduce los scores oficiales.
+    \item Mejora en vivo: cambiar un \emph{prompt}/consulta o añadir un par y re-ejecutar.
+  \end{enumerate}
+  \vfill
+  \footnotesize\centering Lo pesado (\texttt{make run}) va pre-ejecutado; en vivo solo corro lo que tarda segundos.
 \end{frame}
 
-% ----------------------------------------------------------- 3 min
-\begin{frame}{Mejora de código en vivo: ¿usa la imagen? y por tag (3 min)}
-  \begin{columns}
-    \column{0.5\textwidth}
-    \includegraphics[width=\linewidth]{blindness.png}
-    \column{0.5\textwidth}
-    \includegraphics[width=\linewidth]{by_tag.png}
-  \end{columns}
-  \footnotesize Prueba de ceguera: real $\gg$ imágenes permutadas $\Rightarrow$ el modelo
-  \emph{sí} usa la imagen. Los errores son de \textbf{binding/relación}, no de reconocimiento.
-\end{frame}
-
-% ----------------------------------------------------------- 2 min
-\begin{frame}{Defensa crítica: limitaciones y mejora (2 min)}
+% ===================== 22. LIMITACIONES =====================
+\begin{frame}{Defensa crítica: limitaciones}
   \begin{itemize}
-    \item \textbf{Limitación:} el group score mezcla \emph{fallo composicional} con \emph{ítems ambiguos}
-      (Diwan et al.); el set curado es un proxy controlado, no el benchmark oficial.
-    \item \textbf{Métrica:} azar del group $=1/6$ (no $1/16$): text e image no son independientes.
-    \item \textbf{Sesgo:} sensibilidad a empates y a la normalización de embeddings.
-    \item \textbf{Mejora:} evaluar un \textbf{cross-encoder / fusión profunda (C5)} y re-ranking
-      con interacción cruzada (C6); versionar embeddings (DVC) para reproducibilidad total.
+    \item El group bajo \textbf{mezcla} fallo composicional con ítems ambiguos o difíciles
+    (Diwan et al., «Why is Winoground Hard?»).
+    \item Las métricas son comparaciones estrictas: \textbf{sensibles a empates} y a la normalización.
+    \item R@K y accuracy \textbf{no miden composición}: necesarias, no suficientes.
+    \item El set curado offline es un \emph{proxy} sintético (OOD para CLIP).
   \end{itemize}
+\end{frame}
+
+% ===================== 23. MEJORAS =====================
+\begin{frame}{Mejora propuesta}
+  \begin{itemize}
+    \item Evaluar un \textbf{cross-encoder / fusión profunda} (C5) y \textbf{re-ranking} con
+    interacción cruzada (C6): la arquitectura que sí puede componer.
+    \item Versionar embeddings (DVC) para reproducibilidad total de datos.
+    \item Ampliar a más prompts, checkpoints y a \emph{prompt ensembles} (C10).
+  \end{itemize}
+  \vfill
+  \centering\footnotesize Lo que \textbf{no} aseguro aún: que un cross-encoder lo resuelva. Es mi hipótesis, no un resultado medido.
+\end{frame}
+
+% ===================== 24. CONEXIÓN CUADERNOS + CONCLUSIÓN =====================
+\begin{frame}{Conclusión y conexión con el curso}
+  \begin{itemize}
+    \item \textbf{C10:} motor OpenCLIP (embeddings, coseno, checkpoints, FAISS).
+    \item \textbf{C5:} dual-encoder vs fusión profunda — \emph{por qué} falla.
+    \item \textbf{C8:} atención crossmodal / interpretabilidad — la prueba de ceguera.
+  \end{itemize}
+  \vfill
+  \centering\Large El retrieval alto \alert{no} implica razonamiento composicional.\\
+  \normalsize Lo medí, lo validé y lo expliqué de forma reproducible.
+\end{frame}
+
+% ===================== 25. CIERRE / GRACIAS =====================
+\begin{frame}{Gracias}
+  \centering
+  \textbf{Niels Victor Pacheco Barrios}\\[2pt]
+  \footnotesize Winoground / Evaluating CLIP · Cuadernos C5 · C8 · C10\\[6pt]
+  \texttt{github.com/nielspac177/Winoground-Evaluating-CLIP-MCC225}\\[10pt]
+  \normalsize ¿Preguntas?
 \end{frame}
 
 \appendix
-\begin{frame}{Backup: comparación de checkpoints}
-  \begin{center}\includegraphics[height=0.7\textheight]{checkpoint_comparison.png}\end{center}
-\end{frame}
-
-\begin{frame}{Backup: casos de error}
-  \begin{center}\includegraphics[height=0.72\textheight]{qualitative_examples.png}\end{center}
+\begin{frame}{Backup: referencias}
+  \footnotesize
+  \begin{itemize}
+    \item Thrush et al. (2022). \textit{Winoground.} CVPR.
+    \item Diwan et al. (2022). \textit{Why is Winoground Hard?} EMNLP.
+    \item Radford et al. (2021). \textit{CLIP.} ICML.
+    \item Agarwal et al. (2021). \textit{Evaluating CLIP.}
+  \end{itemize}
 \end{frame}
 
 \end{document}
