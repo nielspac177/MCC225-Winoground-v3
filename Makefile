@@ -1,4 +1,4 @@
-.PHONY: setup data run figures test validate models manifest notebook annotate figura avance demo slides all clean help docker-avance
+.PHONY: setup data run figures test validate models manifest notebook annotate figura avance demo demo-visual slides all clean help docker-avance docker-demo
 PY := .venv/bin/python
 
 help:
@@ -69,6 +69,9 @@ slides:
 
 docker-avance:   ## reproducción Exposición 2 en Docker
 	docker compose run --rm avance
+
+docker-demo:   ## genera el demo visual (paneles + GIF) en Docker
+	docker compose run --rm demo
 
 all: data run figures test
 	@echo "Pipeline completo. Revisa outputs/ y notebooks/."

@@ -20,3 +20,14 @@ services:
       # Monta tu token HF para acceder al Winoground real (gated).
       HF_TOKEN: ${HF_TOKEN:-}
     command: bash -lc "python scripts/convert_models_to_safetensors.py && python scripts/build_local_manifest.py 120 && python scripts/run_notebook_inproc.py notebooks/Cuaderno14_MCC225_resuelto.ipynb && python scripts/annotate_error_sheet.py && python scripts/02_run_winoground.py && python scripts/03_make_figures.py"
+
+  # Demo del avance: genera los paneles visuales + el GIF en outputs/demo/
+  # (se escribe en el volumen montado, visible en el host).
+  demo:
+    build: .
+    image: mcc225-winoground:latest
+    volumes:
+      - ./:/workspace
+    environment:
+      HF_TOKEN: ${HF_TOKEN:-}
+    command: bash -lc "python scripts/demo_visual.py --n 6 && python scripts/demo_winoground.py --n 5 --retrieval"

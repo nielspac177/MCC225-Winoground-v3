@@ -14,6 +14,11 @@
 *Demo (`make demo-visual`): en cada par mínimo, CLIP asigna similitudes casi idénticas a
 ambos captions (Δ ≈ 0.01) y elige la misma imagen para los dos → falla el `group`.*
 
+**🔗 Ver directo:** [📓 Cuaderno 14 resuelto (con resultados)](notebooks/Cuaderno14_MCC225_resuelto.ipynb)
+· [🧭 Respuesta de la Actividad 5](reporte_evaluacion_responsable.md)
+· [🖥️ Slides (PDF)](slides/latex/exposicion2_winoground.pdf)
+· [📃 Avance técnico (PDF)](docs/avance_tecnico_MCC225.pdf)
+
 ---
 
 ## 1. Problema
@@ -120,10 +125,16 @@ make demo            # demo en vivo (terminal)
 make demo-visual     # demo VISUAL: paneles con imágenes + heatmap + GIF
 ```
 
+**Todo está dockerizado** (imagen CPU en `Dockerfile`, servicios en `docker-compose.yml`):
+
 ```bash
-# o todo en Docker (CPU)
-docker compose run --rm avance
+docker compose run --rm avance      # reproducción completa (modelos + Cuaderno14 + pipeline + figuras)
+docker compose run --rm winoground  # solo el pipeline Winoground
+docker compose run --rm demo        # genera el demo visual (paneles + GIF) en outputs/demo/
 ```
+
+Los resultados se escriben en el volumen montado (`./:/workspace`), así que aparecen en el host.
+Atajos: `make docker-avance`, `make docker-demo`.
 
 Sin uv/pyproject: `pip install -r requirements.txt`. El *scorer* está validado; CI (GitHub
 Actions) corre tests + *smoke run* en cada push y cada noche.
