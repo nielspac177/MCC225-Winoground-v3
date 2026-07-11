@@ -161,29 +161,6 @@ slides/      latex/ (Beamer→PDF: exposición 2 + defensa) · pptx/
 tests/       pytest del scorer y métricas
 ```
 
-## Contexto de la evaluación: exposición y Actividad 5
-
-### 1) La exposición — *Segunda Exposición Académica Programada* (la evaluación de hoy)
-
-- **Formato:** individual, ~3 h, **20 puntos**. Una **exposición oral de 12–15 min** + una
-  **ronda de defensa** (preguntas técnicas no publicadas, que también puntúan).
-- **Objetivo:** sustentar el **avance del trabajo integrador** demostrando dominio de
-  *transformer, atención y arquitecturas multimodales*, con **evidencia experimental real**
-  (del Cuaderno14) y la **Actividad5 aplicada**.
-- **Insumos obligatorios en el repo:** 8 slides PDF, avance técnico 2–3 pág, repo con commits,
-  Cuaderno14 resuelto, Actividad5 y evidencia reproducible. → *todo listo y publicado.*
-- **Rúbrica (20 pts):** formulación (3) · transformer+atención (4) · arquitecturas+comparación
-  (4) · evidencia (3) · Actividad5 (3) · repo/reproducibilidad (2) · comunicación/defensa (1).
-
-### 2) La Actividad 5 — *"Evaluación responsable del proyecto multimodal"*
-
-No es un proyecto nuevo: es la **capa crítica** sobre el sistema. Usa el Cuaderno14 como
-plantilla y responde *¿cómo evalúo responsablemente mi sistema multimodal?* Es uno de los
-insumos obligatorios de la exposición y aporta **3 de los 20 puntos**.
-
-> **En una frase:** la *exposición* es la sustentación oral del avance (Winoground/CLIP); la
-> *Actividad 5* es el análisis honesto de confiabilidad, errores y límites que se presenta
-> dentro de esa exposición.
 
 ### ¿Dónde está el Cuaderno 14?
 
@@ -195,11 +172,6 @@ insumos obligatorios de la exposición y aporta **3 de los 20 puntos**.
 
 Reproducir: `make avance` (o `docker compose run --rm avance`).
 
-### ¿Cómo resolvemos la Actividad 5?
-
-Se **adapta el Cuaderno14 al proyecto** (dual-encoder CLIP en Winoground; ver
-[ADR 0002](docs/adr/0002-cuaderno14-sobre-winoground.md)) y se completan sus **8 partes con
-evidencia real y trazable** — ningún caso inventado:
 
 | Parte de la Actividad 5 | Cómo se resuelve | Evidencia |
 |---|---|---|
