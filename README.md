@@ -147,9 +147,9 @@ modela la interacción imagen–texto token a token; ya se probó un *re-ranker-
 folds como paso intermedio. La conclusión central se sostiene con evidencia reproducible:
 **tener buen retrieval no garantiza composición.**
 
-Las líneas de trabajo hacia el trabajo final (cross-encoder profundo, escala estadística,
-hard-negative training, interpretabilidad de la atención, ambigüedad del benchmark) están
-priorizadas con esfuerzo estimado en [`docs/TRABAJO_FUTURO.md`](docs/TRABAJO_FUTURO.md).
+**Qué haremos:** evaluar un cross-encoder profundo (con atención cruzada) para ver si cierra la
+brecha composicional, a mayor escala y con interpretabilidad de la atención. Plan priorizado en
+[`docs/TRABAJO_FUTURO.md`](docs/TRABAJO_FUTURO.md).
 
 ---
 
