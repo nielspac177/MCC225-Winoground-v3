@@ -165,6 +165,26 @@ slides/      latex/ (Beamer→PDF: exposición 2 + defensa) · pptx/
 tests/       pytest del scorer y métricas
 ```
 
+## Novedades respecto al Examen Parcial 1
+
+El Examen Parcial estableció la tesis con la evaluación OpenCLIP en Winoground (scores
+text/image/group, IC *bootstrap*, error por *tag*, prueba de ceguera, comparación de
+checkpoints). La **Segunda Exposición profundiza y amplía** ese avance:
+
+| Nuevo en la Exposición 2 | Detalle |
+|---|---|
+| **Cuaderno 14 resuelto y ejecutado** | pipeline multimodal completo sobre 120 pares reales: retrieval Recall@K, CLIPScore, captioning BLIP (BLEU/ROUGE), CapFilt, ablación visual, perturbación textual y análisis de errores anotado (29 casos) |
+| **Actividad 5 (evaluación responsable)** | reporte de 8 partes: 5 casos reales, confiabilidad, explicabilidad, sesgo y uso responsable |
+| **Bug corregido** | fuga de datos en la métrica de captions (BLEU/ROUGE=1.0 espurios) detectada y corregida — pensamiento crítico, no solo ejecutar código |
+| **Adaptación al proyecto** | correr el Cuaderno14 sobre datos reales de Winoground ([ADR 0002](docs/adr/0002-cuaderno14-sobre-winoground.md)) |
+| **Demos** | en terminal, visual (paneles + GIF) y **app HTML interactiva** (`make demo`, `demo-visual`, `demo-app`) |
+| **Nuevos entregables** | 8 slides de Exposición 2, avance técnico 2–3 pp, flujograma, plan, ENTREGA, banco de defensa y trabajo futuro |
+| **Reproducibilidad ampliada** | conversión a safetensors (fix CVE-2025-32434), `requirements.txt`, servicios Docker `avance`/`demo`, targets de Makefile |
+
+El *"Δ pequeño ⇒ CLIP casi no distingue"* del demo es la diferencia de similitud coseno entre
+la imagen correcta y la incorrecta para un mismo caption: **Δ ≈ 0.01–0.02** significa que CLIP
+les asigna casi la misma similitud y no separa el par mínimo → falla la composición.
+
 ## Entregables de la Segunda Exposición Académica
 
 Checklist completo y trazabilidad rúbrica→archivo en
