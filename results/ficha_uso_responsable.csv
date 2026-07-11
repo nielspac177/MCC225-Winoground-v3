@@ -1,0 +1,8 @@
+aspecto,respuesta
+Posible sesgo visual,"CLIP (laion2b/LAION) se entreno con pares imagen-texto extraidos de la web; hereda el sesgo de esa distribucion (escenas frecuentes, estetica occidental, sobre-representacion de objetos comunes) y rinde peor en escenas poco frecuentes o composicionalmente inusuales."
+Posible sesgo linguistico,"Los captions y el encoder de texto operan en ingles. El modelo no fue evaluado en espanol; usarlo con consultas en espanol degradaria el desempeno de forma no cuantificada en este trabajo."
+Posible sesgo cultural o de dominio,"El dominio es fotografia web generica de Winoground; no cubre dominios especializados (medico, satelital, documental) ni contextos culturales especificos. Las conclusiones no se transfieren a esos dominios."
+Riesgo principal si se usa mal,"Interpretar un CLIPScore alto o un buen Recall@K como 'comprension' de la escena. El sistema recupera bien por presencia de conceptos pero falla en relaciones, orden, conteo y negacion (group_score 0.075 << humano 0.855)."
+Supervision humana necesaria,"Obligatoria en cualquier decision que dependa de relaciones espaciales, roles agente-paciente, conteo o negacion. La salida debe tratarse como candidata a revision, no como veredicto."
+Uso recomendado,"limitado"
+Justificacion del uso recomendado,"Confiable como recuperador/ranker grueso y como filtro de calidad de captions (accuracy 0.903), pero no confiable para razonamiento composicional. El uso se limita a condiciones controladas con verificacion humana; queda desaconsejado como decisor autonomo en tareas que exijan composicion."

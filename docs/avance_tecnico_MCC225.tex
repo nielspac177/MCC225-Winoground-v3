@@ -1,0 +1,159 @@
+\documentclass[10pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noquoting]{babel}
+\usepackage[a4paper,margin=2.1cm]{geometry}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{siunitx}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+
+\graphicspath{{../outputs/figures/}}
+
+\setlength{\parskip}{0.35em}
+\setlength{\parindent}{0pt}
+
+\title{\vspace{-1.4cm}\textbf{Avance técnico breve: recuperación alta no implica razonamiento composicional --- evaluación de CLIP en Winoground}}
+\author{Niels Victor Pacheco Barrios \\ \small MCC225 --- Maestría en Ciencias de la Computación --- 2026-1}
+\date{\vspace{-0.6em}\small 11 de julio de 2026}
+
+\begin{document}
+\maketitle
+\vspace{-1.2em}
+
+\section{Problema y tarea multimodal}
+El trabajo evalúa si un modelo \emph{dual-encoder} tipo CLIP, fuerte en recuperación
+imagen--texto, razona de forma \emph{composicional}. Las modalidades son imagen y texto: la
+entrada es un par mínimo formado por dos imágenes y dos \emph{captions} que contienen exactamente
+las mismas palabras en distinto orden, y la salida es una matriz de similitud coseno
+$2\times2$ entre cada \emph{caption} y cada imagen. La tarea es de emparejamiento composicional
+y recuperación (\emph{compositional image--text matching}): acertar exige codificar relaciones
+espaciales y vinculación atributo--objeto, no solo reconocer conceptos aislados. El conjunto es
+Winoground (Thrush et al., 2022), con sus 400 ejemplos oficiales. La métrica principal son los
+tres \emph{scores} oficiales: \emph{text} (elegir la \emph{caption} correcta para ambas imágenes),
+\emph{image} (elegir la imagen correcta para ambas \emph{captions}) y \emph{group} (acertar ambas
+condiciones a la vez). El criterio de validación de la hipótesis es que el \emph{group score}
+supere el azar de $1/6 \approx 0{,}167$ (el azar no es $1/4$ porque \emph{text} e \emph{image} no
+son independientes); si no lo supera pese a una recuperación alta, se confirma que retrieval y
+composición son capacidades distintas.
+
+\section{Arquitectura multimodal y comparación}
+El sujeto de evaluación es un dual-encoder CLIP (OpenCLIP, \texttt{ViT-B-32/laion2b}): dos torres
+Transformer independientes proyectan imagen y texto a un espacio común, y la comparación es un
+coseno entre dos embeddings globales L2-normalizados. Se eligió por ser barato, determinista y
+reproducible en CPU/MPS --solo inferencia--, y porque es justo la familia que sobresale en
+retrieval y cuya composición queremos poner a prueba. Como contraste conceptual está el
+\emph{cross-encoder} de fusión profunda (estilo BLIP-2 o MMBT, con atención crossmodal). Las
+diferencias relevantes: \textbf{costo computacional} --- el dual-encoder precomputa embeddings y
+escala a galerías masivas ($O(N)$ comparaciones), mientras la fusión profunda debe reprocesar
+cada par imagen--texto conjuntamente y no escala a retrieval masivo; \textbf{tipo de alineamiento}
+--- tardío y global (\emph{late fusion}, un vector por modalidad) frente a profundo y token-a-token
+(atención cruzada entre parches visuales y \emph{tokens} textuales); \textbf{tipo de error} --- el
+dual-encoder se comporta como \emph{bag-of-concepts}, insensible al orden y a la relación, justo lo
+que Winoground penaliza, mientras la fusión profunda puede modelar dependencias entre atributos y
+objetos; \textbf{interpretabilidad} --- la fusión profunda expone mapas de atención cruzada
+inspeccionables, mientras el dual-encoder solo entrega una similitud escalar. Para \emph{esta}
+tarea la fusión profunda es más pertinente en expresividad composicional, pero el dual-encoder es
+el sujeto correcto para \emph{exhibir} la brecha entre recuperación y composición a bajo costo.
+
+\section{Transformer y atención, conectados al modelo}
+Cada torre es un Transformer: el texto se divide en \emph{tokens} y la imagen en parches, ambos
+convertidos en \emph{embeddings} a los que se suma una codificación posicional que reintroduce el
+orden perdido por la permutación-invarianza de la atención. El mecanismo central es la atención
+producto-punto escalada, $\mathrm{softmax}\!\left(QK^{\top}/\sqrt{d}\right)V$, donde cada
+\emph{token} emite una consulta $Q$, una clave $K$ y un valor $V$; el producto $QK^{\top}$ mide
+afinidad entre \emph{tokens}, el factor $1/\sqrt{d}$ evita saturar el \emph{softmax} y la salida es
+una combinación ponderada de los valores. En \emph{self-attention} $Q$, $K$ y $V$ provienen de la
+misma secuencia (los \emph{tokens} de texto se atienden entre sí; los parches de imagen entre sí),
+mientras en \emph{cross-attention} las consultas de una modalidad atienden a las claves y valores de
+la otra, habilitando \emph{grounding} explícito parche$\leftrightarrow$palabra. El costo es
+$O(n^2)$ en el número de \emph{tokens}, lo que encarece las secuencias largas (una imagen aporta
+muchos más parches que palabras un \emph{caption}). El punto mecanístico clave: CLIP usa
+\emph{self-attention} dentro de cada torre pero \textbf{no} tiene \emph{cross-attention} entre
+ellas; imagen y texto solo se encuentran al final, ya colapsados en un vector por el coseno. Sin
+interacción token-a-token no hay mecanismo para verificar qué atributo se liga a qué objeto ni qué
+entidad ejerce una relación, y esa es la razón mecanística por la que la composición cae cerca del
+azar aunque la recuperación sea alta.
+
+\section{Evidencia experimental}
+La Tabla~\ref{tab:res} reúne los resultados sobre los 400 ejemplos oficiales con
+\texttt{ViT-B-32/laion2b}. El \emph{text score} ($0{,}3475$) supera el azar de $0{,}25$, pero el
+\emph{group score} ($0{,}075$) queda por debajo del azar de $0{,}167$ y lejísimos del humano
+($0{,}855$); en paralelo la recuperación es alta (R@5$=0{,}667$, R@10$=0{,}774$). Que
+\emph{group} $<1/6$ no significa ``peor que aleatorio'' en general: es consecuencia de la asimetría
+\emph{text}$\gg$\emph{image}, ya que el \emph{group} exige ganar ambas direcciones. El análisis por
+tag confirma la naturaleza del fallo: la categoría \emph{Relation} es la peor
+(\emph{group}$=0{,}047$, $n=233$), seguida de \emph{Object} ($0{,}085$, $n=141$) y \emph{Both}
+($0{,}269$, $n=26$); son fallos de \emph{vinculación} y no de reconocimiento. El scorer quedó
+validado contra los \emph{scores} oficiales de CLIP del propio dataset (\texttt{clip.jsonl}),
+reproduciendo text$=0{,}3075$, image$=0{,}105$, group$=0{,}080$. La comparación de tres
+\emph{checkpoints} no muestra tendencia monótona con el tamaño (\emph{group}: $0{,}075$ en
+B-32/laion2b, $0{,}0725$ en B-16/datacomp\_xl, $0{,}085$ en L-14/openai), de modo que escalar no
+resuelve la composición. Las figuras \texttt{recall\_vs\_group.png}, \texttt{by\_tag.png},
+\texttt{scores\_vs\_chance.png}, \texttt{blindness.png} y \texttt{checkpoint\_comparison.png}
+(en \texttt{outputs/figures/}) documentan gráficamente estos hallazgos.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Winoground oficial ($N=400$), OpenCLIP \texttt{ViT-B-32/laion2b}. Valores exactos de
+\texttt{outputs/metrics/}.}
+\label{tab:res}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Métrica} & \textbf{Modelo} & \textbf{Azar} & \textbf{Humano} & \\
+\midrule
+Text score            & 0,3475 & 0,250 & 0,895 & \\
+Image score           & 0,110  & 0,250 & 0,885 & \\
+Group score           & 0,075  & 0,167 & 0,855 & \\
+\midrule
+\multicolumn{5}{l}{\textit{Recuperación (texto$\rightarrow$imagen, galería de 800)}} \\
+R@1 / R@5 / R@10       & \multicolumn{4}{l}{0,304 \; / \; 0,667 \; / \; 0,774} \\
+\midrule
+\multicolumn{5}{l}{\textit{Group score por tag (collapsed)}} \\
+Relation ($n{=}233$)   & \multicolumn{4}{l}{0,047} \\
+Object ($n{=}141$)     & \multicolumn{4}{l}{0,085} \\
+Both ($n{=}26$)        & \multicolumn{4}{l}{0,269} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Análisis de errores y confiabilidad}
+Los casos fallidos están dominados por \emph{Relation}: el modelo reconoce las entidades pero no
+resuelve quién ejerce la relación ni qué atributo se liga a qué objeto. La \emph{prueba de ceguera}
+(permutar las imágenes) actúa como evidencia de explicabilidad: el desempeño real
+($0{,}3475/0{,}110/0{,}075$) cae de forma marcada con imágenes permutadas
+($0{,}135/0{,}035/0{,}015$), lo que confirma que el modelo \emph{sí} usa el contenido visual --su
+límite es composicional, no perceptivo. En cuanto a confiabilidad, el sistema es
+\emph{parcialmente confiable, solo en condiciones controladas}: adecuado para recuperación y
+emparejamiento grueso, pero no para decisiones que dependan de relaciones o vinculación fina. El
+riesgo técnico dominante es la \textbf{composición} (falta de fusión crossmodal), y entre los
+sesgos posibles están el desbalance de distribución del preentrenamiento LAION, el carácter OOD del
+set curado sintético para CLIP, y la sensibilidad de la métrica a empates y normalización; además,
+el \emph{group score} mezcla fallo composicional con la ambigüedad intrínseca de algunos ítems
+(Diwan et al., 2022).
+
+\section{Plan de cierre}
+Antes de la defensa final: (i) ya se probó un \emph{re-ranker-lite} validado por folds
+(\emph{group}$\approx0{,}11/0{,}01/0{,}03/0{,}06$), por lo que el paso de cierre es evaluar un
+\emph{cross-encoder} profundo real (C5) sobre Winoground para cuantificar la ganancia composicional
+atribuible a la atención cruzada; (ii) añadir
+un re-ranking con interacción cruzada (C6) sobre los candidatos recuperados por el dual-encoder;
+(iii) ampliar prompts y \emph{checkpoints} y correr el intervalo de confianza \emph{bootstrap} en
+todas las condiciones; y (iv) versionar los embeddings con DVC para asegurar la reproducibilidad
+extremo a extremo.
+
+\vspace{0.4em}
+\footnotesize
+\textbf{Declaración de uso de IA generativa.} Empleé un asistente de IA generativa (Claude) para
+redactar y estructurar este avance a partir de mis resultados y notas; las mediciones, el código y
+las conclusiones son propios y fueron verificados contra \texttt{outputs/metrics/}.
+
+\textbf{Referencias.} Thrush et al. (2022), \emph{Winoground}, CVPR. Diwan et al. (2022),
+\emph{Why is Winoground Hard?}, EMNLP. Radford et al. (2021), \emph{CLIP}, ICML. Agarwal et al.
+(2021), \emph{Evaluating CLIP}.
+
+\end{document}

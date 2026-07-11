@@ -9,6 +9,27 @@ __pycache__/
 data/winoground_cache/
 *.npz
 
+# modelos convertidos a safetensors (regenerables con `make models`)
+models_local/
+
+# datos derivados regenerables (imagenes locales + manifiesto con rutas absolutas)
+# regenerar con `make manifest`; la evidencia agregada vive en outputs/
+data/raw/images_local/
+data/raw/manifest_local.csv
+data/processed/
+
+# artefactos de compilación LaTeX (avance técnico en docs/)
+docs/*.aux
+docs/*.log
+docs/*.out
+docs/*.fls
+docs/*.fdb_latexmk
+docs/*.toc
+
+# artefactos accidentales si el notebook corre con CWD equivocado
+notebooks/data/
+notebooks/outputs/
+
 # artefactos de compilación de slides
 slides/latex/*.aux
 slides/latex/*.log
@@ -22,3 +43,11 @@ slides/latex/*.fls
 
 # SO
 .DS_Store
+
+# video narrado
+video/build/
+video/*.mp4
+
+# embeddings versionados para reproducir el entrenamiento
+!data/embeddings/
+!data/embeddings/winoground_real_vitb32.npz

@@ -8,6 +8,47 @@
 > Tener buen retrieval no garantiza composición. Lo demuestro reutilizando el motor OpenCLIP del
 > **Cuaderno 10**, y lo explico con la **fusión profunda (C5)** y la **atención crossmodal (C8)**.
 
+## Segunda Exposición Académica (Exposición 2)
+
+Entregables de la Exposición 2 y dónde vive cada uno:
+
+| Entregable obligatorio | Ubicación |
+|---|---|
+| Presentación PDF (7–8 slides) | `slides/latex/exposicion2_winoground.pdf` |
+| Avance técnico (2–3 pp) | `docs/avance_tecnico_MCC225.pdf` |
+| Repositorio con commits | este repo (historial git) |
+| Cuaderno 14 resuelto + outputs | `notebooks/Cuaderno14_MCC225_resuelto.ipynb` · `outputs/metrics|tables|figures` |
+| Actividad 5 aplicada | `Actividad5-MCC225.md` · `evaluacion_responsable_mcc225/` |
+| Evidencia reproducible | `outputs/metrics/` · `outputs/tables/` · `outputs/figures/` |
+
+**Reproducción — entorno local (uv + Python 3.12):**
+
+```bash
+make setup            # .venv + instala .[dev,notebook]
+make avance           # manifest local (120 pares reales) + ejecuta el Cuaderno14 headless
+make run              # pipeline Winoground -> outputs/metrics
+make figures          # figuras -> outputs/figures
+make test             # pytest
+make demo             # DEMO EN VIVO para la defensa (ver docs/DEMO.md)
+```
+
+Sin uv/pyproject: `pip install -r requirements.txt`.
+
+**Reproducción — Docker (CPU):**
+
+```bash
+docker compose run --rm avance   # o: make docker-avance
+```
+
+**Documentos de apoyo:** [`docs/PLAN_EXPOSICION2_MCC225.md`](docs/PLAN_EXPOSICION2_MCC225.md) ·
+[`docs/FLUJOGRAMA_MCC225.md`](docs/FLUJOGRAMA_MCC225.md) ·
+[`docs/ENTREGA_EXPOSICION2.md`](docs/ENTREGA_EXPOSICION2.md) (checklist de trazabilidad) ·
+[`docs/DEMO.md`](docs/DEMO.md) (guion del demo) ·
+[`docs/RESPUESTAS_EXPOSICION2.md`](docs/RESPUESTAS_EXPOSICION2.md) (banco de defensa) ·
+[`Actividad5-MCC225.md`](Actividad5-MCC225.md).
+
+---
+
 ## Resultado principal (verificable en vivo)
 
 Winoground oficial (400 ejemplos), OpenCLIP **ViT-B-32/laion2b**:

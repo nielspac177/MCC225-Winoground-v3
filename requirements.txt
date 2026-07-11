@@ -1,0 +1,33 @@
+# requirements.txt — MCC225 Winoground / Exposición 2
+#
+# Lista pip-installable para usuarios que NO usan uv/pyproject.toml.
+# Refleja las dependencias de [project] en pyproject.toml y AÑADE
+# jupyter/nbconvert/ipykernel (necesarios para ejecutar el Cuaderno14
+# de forma headless). Los rangos de versión coinciden con pyproject.toml.
+#
+# Instalación:  pip install -r requirements.txt
+# (con pyproject/uv equivale a:  uv pip install -e ".[dev,notebook]")
+
+# --- Núcleo: pipeline Winoground (OpenCLIP) ---
+torch>=2.2,<2.6
+open_clip_torch>=2.24,<3.4
+transformers>=4.40,<6
+datasets>=2.18,<6
+huggingface_hub>=0.23,<1
+faiss-cpu>=1.8,<2
+numpy>=1.26,<2.2
+pandas>=2.1,<3
+matplotlib>=3.8,<4
+scikit-learn>=1.4,<2
+Pillow>=10.0,<13
+PyYAML>=6.0,<7
+tqdm>=4.66,<5
+
+# --- Dev (tests + generación de PPTX) ---
+pytest>=8.0.0
+python-pptx>=0.6.23
+
+# --- Notebook: ejecución headless del Cuaderno14 (BLIP vía transformers) ---
+jupyter>=1.0
+nbconvert>=7.0
+ipykernel>=6.0

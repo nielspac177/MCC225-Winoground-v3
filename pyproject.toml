@@ -23,6 +23,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0.0", "python-pptx>=0.6.23"]
+notebook = ["jupyter>=1.0", "nbconvert>=7.0", "ipykernel>=6.0"]
 
 [build-system]
 requires = ["hatchling"]

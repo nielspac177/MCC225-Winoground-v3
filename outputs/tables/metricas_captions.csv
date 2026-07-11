@@ -1,0 +1,25 @@
+image_id,caption_generado,bleu_simple,rouge_l,cobertura_lexica
+wg_0_0,an old man kissing a little girl,0.1488095238095238,0.42857142857142855,0.5
+wg_0_1,a woman and a child kissing each other woman,0.05555555555555555,0.125,0.16666666666666666
+wg_1_0,a man and woman hugging each other,0.0,0.0,0.0
+wg_1_1,a man and woman standing in a kitchen,0.0,0.0,0.0
+wg_2_0,a wrestler wrestling in a stadium,0.041666666666666664,0.15384615384615383,0.2
+wg_2_1,a man wrestling with a banana peel,0.0,0.0,0.0
+wg_3_0,a whale swims in the ocean with a kay,0.05555555555555555,0.14285714285714285,0.2
+wg_3_1,a lion in the grass,0.05,0.20000000000000004,0.2
+wg_4_0,man wearing a blue shirt,0.0,0.0,0.0
+wg_4_1,a woman is paying a man a sandwich,0.0,0.0,0.0
+wg_5_0,a bird with a fish in its mouth,0.1294642857142857,0.4615384615384615,0.5
+wg_5_1,a bird is flying in the air with its wings spread,0.07045454545454546,0.25000000000000006,0.5
+wg_6_0,a man is climbing up a tall tree,0.0625,0.08695652173913045,0.07692307692307693
+wg_6_1,a green leaf,0.08333333333333333,0.1111111111111111,0.07692307692307693
+wg_7_0,a bottle floating in the water with a light shining on it,0.1268939393939394,0.47058823529411764,0.8
+wg_7_1,a bottle of water on a white background,0.1607142857142857,0.3076923076923077,0.6
+wg_8_0,a red car is parked under a tree,0.1607142857142857,0.28571428571428575,0.6
+wg_8_1,a white car,0.16666666666666666,0.4444444444444444,0.4
+wg_9_0,a young girl is falling in the leaves,0.09821428571428571,0.3076923076923077,0.4
+wg_9_1,a man and a young boy throwing leaves,0.03125,0.15384615384615385,0.2
+wg_10_0,a group of people floating in the water with laptops,0.07777777777777778,0.25,0.4
+wg_10_1,a small green boat,0.0,0.0,0.0
+wg_11_0,a woman standing on a table in a room,0.1423611111111111,0.26666666666666666,0.3333333333333333
+wg_11_1,a woman in a pink dress under a bed,0.08333333333333333,0.13333333333333333,0.16666666666666666

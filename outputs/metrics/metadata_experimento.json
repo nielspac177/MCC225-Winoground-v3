@@ -1,0 +1,22 @@
+{
+  "semilla": 22514,
+  "python": "3.12.11 (main, Aug 28 2025, 17:00:08) [Clang 20.1.4 ]",
+  "torch": "2.5.1",
+  "dispositivo": "mps",
+  "cuda_disponible": false,
+  "commit_git": "e22ab9c4e78b1ff967d1ed5a7014d5c40d783a27",
+  "configuracion": {
+    "dataset_name": "jxie/flickr8k",
+    "dataset_split": "train",
+    "max_samples": 120,
+    "evaluation_samples": 100,
+    "caption_samples": 24,
+    "error_cases": 32,
+    "batch_size": 16,
+    "clip_model_name": "models_local/clip-vit-base-patch32",
+    "blip_model_name": "models_local/blip-base",
+    "use_blip_captioner": true,
+    "allow_demo_mode": false,
+    "repo_root": "."
+  }
+}
