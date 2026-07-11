@@ -161,31 +161,6 @@ slides/      latex/ (Beamer→PDF: exposición 2 + defensa) · pptx/
 tests/       pytest del scorer y métricas
 ```
 
-
-### ¿Dónde está el Cuaderno 14?
-
-| Archivo | Qué es |
-|---|---|
-| `notebooks/Cuaderno14_MCC225.ipynb` | Base sin resolver (traído del repo del curso) |
-| `notebooks/Cuaderno14_MCC225_resuelto.ipynb` | **Resuelto y ejecutado** (24 celdas, 0 errores, 120 pares reales de Winoground) |
-| `reports/reporte_exposicion_2.md` · `outputs/tables/` · `outputs/metrics/` | Reporte y evidencia que produce |
-
-Reproducir: `make avance` (o `docker compose run --rm avance`).
-
-
-| Parte de la Actividad 5 | Cómo se resuelve | Evidencia |
-|---|---|---|
-| 1. Proyecto y tarea | Ficha: CLIP en Winoground, matching/retrieval composicional | `reporte_evaluacion_responsable.md` |
-| 2. Adaptación del Cuaderno14 | 120 pares reales, CLIP ViT-B/32, baseline desplazado | `docs/adr/0002-…` |
-| 3. Resultados cuantitativos | E1 retrieval · E2 ablación visual · E3 Winoground *group* | `results/metricas.csv` |
-| 4. Cinco casos (2✓/2✗/1 ambiguo) | tomados de casos reales del experimento | `results/casos_analizados.csv` · `outputs/metrics/failure_cases.json` |
-| 5. Confiabilidad | sensibilidad a la negación (Δ≈−0.008) + caso difícil | `outputs/tables/perturbacion_textual.csv` |
-| 6. Explicabilidad | prueba de ceguera (0.075→0.015) + error por *tag* | `outputs/metrics/blindness.json` · `by_tag.csv` |
-| 7. Sesgo y uso responsable | ficha; uso recomendado **limitado** | `results/ficha_uso_responsable.csv` |
-| 8. Conclusión (450–600 pal.) | síntesis honesta: *parcialmente confiable* | `reporte_evaluacion_responsable.md` |
-
-Figura de apoyo: `figures/ejemplos_evaluados.png` · índice: `evaluacion_responsable_mcc225/README.md`.
-
 ## Entregables de la Segunda Exposición Académica
 
 Checklist completo y trazabilidad rúbrica→archivo en
@@ -202,6 +177,35 @@ Checklist completo y trazabilidad rúbrica→archivo en
 | Cuaderno 14 resuelto + outputs | `notebooks/Cuaderno14_MCC225_resuelto.ipynb` · `outputs/` |
 | Actividad 5 aplicada | `reporte_evaluacion_responsable.md` · `evaluacion_responsable_mcc225/` |
 | Evidencia reproducible | `outputs/metrics/` · `outputs/tables/` · `outputs/figures/` |
+
+### ¿Dónde está el Cuaderno 14?
+
+| Archivo | Qué es |
+|---|---|
+| `notebooks/Cuaderno14_MCC225.ipynb` | Base sin resolver (traído del repo del curso) |
+| `notebooks/Cuaderno14_MCC225_resuelto.ipynb` | **Resuelto y ejecutado** (24 celdas, 0 errores, 120 pares reales de Winoground) |
+| `reports/reporte_exposicion_2.md` · `outputs/tables/` · `outputs/metrics/` | Reporte y evidencia que produce |
+
+Reproducir: `make avance` (o `docker compose run --rm avance`).
+
+### Cómo se resuelve la Actividad 5 (8 partes)
+
+Se adapta el Cuaderno14 al proyecto (dual-encoder CLIP en Winoground; ver
+[ADR 0002](docs/adr/0002-cuaderno14-sobre-winoground.md)) y se completan las 8 partes con
+evidencia real y trazable — ningún caso inventado:
+
+| Parte de la Actividad 5 | Cómo se resuelve | Evidencia |
+|---|---|---|
+| 1. Proyecto y tarea | Ficha: CLIP en Winoground, matching/retrieval composicional | `reporte_evaluacion_responsable.md` |
+| 2. Adaptación del Cuaderno14 | 120 pares reales, CLIP ViT-B/32, baseline desplazado | `docs/adr/0002-…` |
+| 3. Resultados cuantitativos | E1 retrieval · E2 ablación visual · E3 Winoground *group* | `results/metricas.csv` |
+| 4. Cinco casos (2✓/2✗/1 ambiguo) | tomados de casos reales del experimento | `results/casos_analizados.csv` · `outputs/metrics/failure_cases.json` |
+| 5. Confiabilidad | sensibilidad a la negación (Δ≈−0.008) + caso difícil | `outputs/tables/perturbacion_textual.csv` |
+| 6. Explicabilidad | prueba de ceguera (0.075→0.015) + error por *tag* | `outputs/metrics/blindness.json` · `by_tag.csv` |
+| 7. Sesgo y uso responsable | ficha; uso recomendado **limitado** | `results/ficha_uso_responsable.csv` |
+| 8. Conclusión (450–600 pal.) | síntesis honesta: *parcialmente confiable* | `reporte_evaluacion_responsable.md` |
+
+Figura de apoyo: `figures/ejemplos_evaluados.png` · índice: `evaluacion_responsable_mcc225/README.md`.
 
 ## Uso de herramientas generativas
 
