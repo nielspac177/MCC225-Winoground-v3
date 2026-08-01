@@ -23,12 +23,54 @@ def get_device(prefer: str | None = None) -> torch.device:
     return torch.device("cpu")
 
 
+# Repositorios de HuggingFace que respaldan cada par (model_name, pretrained).
+# Sirven para localizar los pesos YA descargados y pasárselos a open_clip como
+# ruta de fichero. Motivo: en este entorno la resolución de checkpoints desde
+# Python se cuelga indefinidamente (el proceso queda a 0 % de CPU y sin socket
+# abierto), incluso con HF_HUB_OFFLINE=1. Cargar desde una ruta explícita evita
+# esa vía por completo. Ver data/MANIFIESTO.md.
+_REPOS_HF = {
+    ("ViT-B-32", "laion2b_s34b_b79k"): "models--laion--CLIP-ViT-B-32-laion2B-s34B-b79K",
+    ("ViT-B-16", "datacomp_xl_s13b_b90k"): "models--laion--CLIP-ViT-B-16-DataComp.XL-s13B-b90K",
+    ("ViT-L-14-quickgelu", "openai"): "models--timm--vit_large_patch14_clip_224.openai",
+    ("ViT-B-16", "openai"): "models--timm--vit_base_patch16_clip_224.openai",
+}
+
+_PESOS = ("open_clip_model.safetensors", "open_clip_pytorch_model.bin")
+
+
+def resolve_pretrained(model_name: str, pretrained: str) -> str:
+    """Ruta local a los pesos si están en la caché; si no, el `pretrained` original.
+
+    Se busca solo dentro de `snapshots/`. El directorio hermano `.no_exist/`
+    guarda consultas negativas anteriores y no contiene pesos: mirarlo daría
+    falsos positivos.
+    """
+    import os
+    from pathlib import Path
+
+    repo = _REPOS_HF.get((model_name, pretrained))
+    if repo is None:
+        return pretrained
+    raiz = Path(os.environ.get("HF_HOME") or Path.home() / ".cache" / "huggingface")
+    base = raiz / "hub" / repo / "snapshots"
+    if not base.is_dir():
+        return pretrained
+    for snapshot in sorted(base.iterdir()):
+        for nombre in _PESOS:
+            ruta = snapshot / nombre
+            if ruta.exists():
+                return str(ruta)
+    return pretrained
+
+
 def create_model(model_name: str, pretrained: str, device: torch.device | None = None):
     """Devuelve (model, preprocess, tokenizer, device)."""
     import open_clip
 
     device = device or get_device()
-    model, _, preprocess = open_clip.create_model_and_transforms(model_name, pretrained=pretrained)
+    ruta = resolve_pretrained(model_name, pretrained)
+    model, _, preprocess = open_clip.create_model_and_transforms(model_name, pretrained=ruta)
     tokenizer = open_clip.get_tokenizer(model_name)
     model = model.to(device).eval()
     return model, preprocess, tokenizer, device
