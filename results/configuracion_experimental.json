@@ -1,0 +1,60 @@
+{
+  "proyecto": "Evaluación del razonamiento composicional en Winoground",
+  "estudiante": "Niels Victor Pacheco Barrios",
+  "curso": "MCC225 — IA Generativa y Aprendizaje Multimodal",
+  "fecha_utc": "2026-08-01T15:01:39+00:00",
+  "git": {
+    "commit": "d0beaccaddd00f60bf9548e47c3be9cd3f167e52",
+    "commit_corto": "d0beacc",
+    "rama": "final-mcc225",
+    "arbol_limpio": false
+  },
+  "semilla": 42,
+  "bootstrap_rondas": 2000,
+  "dataset": {
+    "nombre": "facebook/winoground",
+    "n_ejemplos": 400,
+    "acceso": "gated (requiere aceptar la licencia en HuggingFace)",
+    "revision": "b400e173549071916ad1b3d449293bc8d8b4b763"
+  },
+  "modelos_evaluados": [
+    "CLIP ViT-B/16 (datacomp_xl)",
+    "CLIP ViT-B/32 (laion2b)",
+    "CLIP ViT-L/14 (openai)"
+  ],
+  "metricas": {
+    "text_score": {
+      "azar": 0.25
+    },
+    "image_score": {
+      "azar": 0.25
+    },
+    "group_score": {
+      "azar": 0.16666666666666666
+    },
+    "group_match_score": {
+      "azar": 0.5
+    }
+  },
+  "hardware": {
+    "plataforma": "macOS-26.1-arm64-arm-64bit",
+    "procesador": "arm",
+    "python": "3.12.11"
+  },
+  "versiones": {
+    "torch": "2.5.1",
+    "open_clip_torch": "3.3.0",
+    "transformers": "5.12.0",
+    "datasets": "5.0.0",
+    "huggingface_hub": "1.19.0",
+    "numpy": "2.1.3",
+    "pandas": "3.0.3",
+    "scipy": "1.17.1",
+    "faiss-cpu": "1.14.3",
+    "Pillow": "12.2.0"
+  },
+  "limitaciones_conocidas": [
+    "scripts/02_run_winoground.py se interbloquea en su bloque FAISS: carga el libomp de FAISS y el de PyTorch en el mismo proceso. El análisis se ejecuta con scripts/11_metric_audit.py, que no importa ninguno de los dos.",
+    "Las descargas de HuggingFace desde Python se cuelgan en este entorno; los pesos de BLIP se obtuvieron con curl a data/models/ (ver data/MANIFIESTO.md)."
+  ]
+}
