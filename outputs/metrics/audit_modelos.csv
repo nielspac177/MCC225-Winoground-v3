@@ -1,0 +1,13 @@
+modelo,clave,metrica,score,ic_lo,ic_hi,azar,humano,supera_azar,ic_estrat_lo,ic_estrat_hi
+CLIP ViT-B/32 (laion2b),winoground_real__ViT-B-32__laion2b_s34b_b79k,text,0.3475,0.29993749999999997,0.3975,0.25,0.895,True,0.3025,0.395
+CLIP ViT-B/32 (laion2b),winoground_real__ViT-B-32__laion2b_s34b_b79k,image,0.11,0.08,0.1425,0.25,0.885,False,0.08,0.1425
+CLIP ViT-B/32 (laion2b),winoground_real__ViT-B-32__laion2b_s34b_b79k,group,0.075,0.05,0.1025,0.16666666666666666,0.855,False,0.05,0.1
+CLIP ViT-B/32 (laion2b),winoground_real__ViT-B-32__laion2b_s34b_b79k,group_match,0.675,0.63,0.72,0.5,,True,0.6275,0.7225
+CLIP ViT-B/16 (datacomp_xl),winoground_real__ViT-B-16__datacomp_xl_s13b_b90k,text,0.2975,0.2525,0.3425,0.25,0.895,True,0.255,0.3425
+CLIP ViT-B/16 (datacomp_xl),winoground_real__ViT-B-16__datacomp_xl_s13b_b90k,image,0.0875,0.06,0.115,0.25,0.885,False,0.0625,0.115
+CLIP ViT-B/16 (datacomp_xl),winoground_real__ViT-B-16__datacomp_xl_s13b_b90k,group,0.0725,0.04993750000000001,0.0975,0.16666666666666666,0.855,False,0.05,0.0975
+CLIP ViT-B/16 (datacomp_xl),winoground_real__ViT-B-16__datacomp_xl_s13b_b90k,group_match,0.6425,0.595,0.6875,0.5,,True,0.5975,0.69
+CLIP ViT-L/14 (openai),winoground_real__ViT-L-14-quickgelu__openai,text,0.2875,0.2449375,0.3325,0.25,0.895,False,0.245,0.3325
+CLIP ViT-L/14 (openai),winoground_real__ViT-L-14-quickgelu__openai,image,0.11,0.0825,0.1425,0.25,0.885,False,0.08,0.1425
+CLIP ViT-L/14 (openai),winoground_real__ViT-L-14-quickgelu__openai,group,0.085,0.06,0.1125,0.16666666666666666,0.855,False,0.06,0.1125
+CLIP ViT-L/14 (openai),winoground_real__ViT-L-14-quickgelu__openai,group_match,0.665,0.6175,0.71,0.5,,True,0.62,0.71

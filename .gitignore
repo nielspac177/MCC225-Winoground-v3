@@ -51,3 +51,9 @@ video/*.mp4
 # embeddings versionados para reproducir el entrenamiento
 !data/embeddings/
 !data/embeddings/winoground_real_vitb32.npz
+
+# Pesos descargados con curl (895 MB): no versionar
+data/models/
+
+# Cache de matrices 2x2 (regenerable con scripts/10_export_sims.py)
+outputs/sims/

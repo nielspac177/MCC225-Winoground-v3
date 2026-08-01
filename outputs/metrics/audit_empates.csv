@@ -1,0 +1,25 @@
+modelo,atol,empates_text,empates_image,empates_group,empates_group_match,group_cota_inf,group_cota_sup
+CLIP ViT-B/32 (laion2b),0.0,0,0,0,0,0.075,0.075
+CLIP ViT-B/32 (laion2b),1e-06,0,1,0,0,0.075,0.075
+CLIP ViT-B/32 (laion2b),0.0001,7,1,0,2,0.075,0.075
+CLIP ViT-B/32 (laion2b),0.001,43,9,6,32,0.0725,0.0875
+CLIP ViT-B/32 (laion2b),0.005,172,41,37,134,0.05,0.1425
+CLIP ViT-B/32 (laion2b),0.01,261,75,67,230,0.0375,0.205
+CLIP ViT-B/32 (laion2b),0.02,346,151,145,301,0.0225,0.385
+CLIP ViT-B/32 (laion2b),0.05,389,281,280,368,0.015,0.715
+CLIP ViT-B/16 (datacomp_xl),0.0,0,0,0,0,0.0725,0.0725
+CLIP ViT-B/16 (datacomp_xl),1e-06,0,0,0,0,0.0725,0.0725
+CLIP ViT-B/16 (datacomp_xl),0.0001,0,0,0,3,0.0725,0.0725
+CLIP ViT-B/16 (datacomp_xl),0.001,39,5,4,37,0.0675,0.0775
+CLIP ViT-B/16 (datacomp_xl),0.005,157,42,33,155,0.055,0.1375
+CLIP ViT-B/16 (datacomp_xl),0.01,277,96,82,233,0.0425,0.2475
+CLIP ViT-B/16 (datacomp_xl),0.02,362,169,168,309,0.0225,0.4425
+CLIP ViT-B/16 (datacomp_xl),0.05,390,285,284,369,0.01,0.72
+CLIP ViT-L/14 (openai),0.0,0,0,0,0,0.085,0.085
+CLIP ViT-L/14 (openai),1e-06,0,0,0,0,0.085,0.085
+CLIP ViT-L/14 (openai),0.0001,5,3,3,4,0.0775,0.085
+CLIP ViT-L/14 (openai),0.001,43,10,9,36,0.065,0.0875
+CLIP ViT-L/14 (openai),0.005,172,53,42,160,0.0375,0.1425
+CLIP ViT-L/14 (openai),0.01,265,103,88,259,0.0375,0.2575
+CLIP ViT-L/14 (openai),0.02,357,201,193,323,0.0125,0.495
+CLIP ViT-L/14 (openai),0.05,396,342,342,380,0.005,0.86
